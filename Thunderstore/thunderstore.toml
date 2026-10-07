@@ -1,0 +1,35 @@
+[config]
+schemaVersion = "0.0.1"
+
+[general]
+repository = "https://thunderstore.io"
+
+[package]
+namespace = "seechela"
+name = "Operator"
+description = "Camcorder to record, rewatch and sell cassettes."
+websiteUrl = "https://github.com/se3ya/LC-Operator"
+containsNswContent = false
+
+[package.dependencies]
+BepInEx-BepInExPack = "5.4.2305"
+TeamXiaolan-DawnLib = "0.9.25"
+Rune580-LethalCompanyInputUtils = "0.7.12"
+
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "./build"
+
+[[build.copy]]
+source = "../Plugin/Operator/bin/Release/netstandard2.1/Operator.dll"
+target = "BepInEx/plugins/Operator/Operator.dll"
+
+[[build.copy]]
+source = "./CHANGELOG.md"
+target = "/"
+
+[[build.copy]]
+source = "../assets/operatorassets"
+target = "BepInEx/plugins/Operator/operatorassets"

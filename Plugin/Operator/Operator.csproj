@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Operator</AssemblyName>
+    <Description>Camcorder to record, rewatch and sell cassettes.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+
+    <Configurations>Debug;Release</Configurations>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+        <BepInExPluginGuid>com.seeya.operator</BepInExPluginGuid>
+        <BepInExPluginName>Operator</BepInExPluginName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>embedded</DebugType>
+		<PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" PrivateAssets="all" />
+    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="81.0.5-ngd.0" Publicize="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.62" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.25" />
+    <PackageReference Include="TeamXiaolan.DawnLib.DuskMod" Version="0.8.3" Publicize="true" />
+    <PackageReference Include="TeamXiaolan.DawnLib.SourceGen" Version="0.2.2" PrivateAssets="all" />
+    <PackageReference Include="Rune580.Mods.LethalCompany.InputUtils" Version="0.7.12" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="AinaVT-LethalConfig" Version="1.4.6" Private="False" />
+  </ItemGroup>
+
+  <Sdk Name="Evaisa.NetcodePatcher.MSBuild" Version="4.4.1" />
+  <ItemGroup>
+    <NetcodePatch Include="$(TargetPath)" />
+  </ItemGroup>
+  <PropertyGroup>
+    <NetcodePatcherUnityVersion>2022.3.62</NetcodePatcherUnityVersion>
+    <NetcodePatcherNetcodeVersion>1.12.0</NetcodePatcherNetcodeVersion>
+    <NetcodePatcherTransportVersion>1.0.0</NetcodePatcherTransportVersion>
+  </PropertyGroup>
+
+  <Target Name="DeployToProfile" DependsOnTargets="NetcodePatch" AfterTargets="PostBuildEvent" Condition="'$(DeployDir)' != ''">
+    <ItemGroup>
+      <_DeployBundle Include="$(MSBuildProjectDirectory)\..\..\assets\operatorassets" Condition="Exists('$(MSBuildProjectDirectory)\..\..\assets\operatorassets')" />
+      <_DeployBundle Include="$(MSBuildProjectDirectory)\..\..\assets\operatorassets.manifest" Condition="Exists('$(MSBuildProjectDirectory)\..\..\assets\operatorassets.manifest')" />
+    </ItemGroup>
+    <MakeDir Directories="$(DeployDir)" Condition="!Exists('$(DeployDir)')" />
+    <Copy SourceFiles="$(TargetDir)Operator.dll" DestinationFolder="$(DeployDir)" />
+    <Copy SourceFiles="@(_DeployBundle)" DestinationFolder="$(DeployDir)" SkipUnchangedFiles="true" Condition="'@(_DeployBundle)' != ''" />
+    <Message Importance="high" Text="[Operator] Deployed Operator.dll -&gt; $(DeployDir)" />
+  </Target>
+
+</Project>

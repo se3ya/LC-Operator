@@ -1,0 +1,194 @@
+ManifestFileVersion: 0
+CRC: 2374767586
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 1c8e3f36c83488bcd898ab5bd6223e79
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 458a7cf9061a76df06eebc8b832e2e21
+  IncrementalBuildHash:
+    serializedVersion: 2
+    Hash: 1c8e3f36c83488bcd898ab5bd6223e79
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 20
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 54
+  Script: {instanceID: 0}
+- Class: 65
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 82
+  Script: {instanceID: 0}
+- Class: 83
+  Script: {instanceID: 0}
+- Class: 84
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 108
+  Script: {instanceID: 0}
+- Class: 111
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 808616378, guid: 053bc7a5a1d71e04a9d948a256246cc0, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 23c1ce4fb46143f46bc5cb5224c934f6, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 7a68c43fe1f2a47cfa234b5eeaa98012, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: c30496d6ae6d6f907456e10a94e01ec6, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 3c36d0a92cbb1f26a39169ef0eae393a, type: 3}
+- Class: 114
+  Script: {fileID: 1829825042, guid: ad2cc5b5a3713aa4187a625b7838f950, type: 3}
+- Class: 114
+  Script: {fileID: -629775370, guid: ad2cc5b5a3713aa4187a625b7838f950, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 507293d35d7a13e5b9ca9bb60e082e11, type: 3}
+- Class: 114
+  Script: {fileID: -1097792660, guid: 9708d15d6a8ee4845ace9be3a2bd936a, type: 3}
+- Class: 114
+  Script: {fileID: 466683445, guid: 9708d15d6a8ee4845ace9be3a2bd936a, type: 3}
+- Class: 114
+  Script: {fileID: -303672662, guid: 9708d15d6a8ee4845ace9be3a2bd936a, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 137
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+- Class: 241
+  Script: {instanceID: 0}
+- Class: 243
+  Script: {instanceID: 0}
+- Class: 245
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers:
+- AssemblyName: Assembly-CSharp
+  ClassName: Battery
+- AssemblyName: Assembly-CSharp
+  ClassName: InteractEvent
+- AssemblyName: Assembly-CSharp
+  ClassName: InteractEventFloat
+- AssemblyName: Unity.RenderPipelines.Core.Runtime
+  ClassName: UnityEngine.Rendering.BitArray128
+- AssemblyName: Unity.RenderPipelines.HighDefinition.Runtime
+  ClassName: UnityEngine.Rendering.HighDefinition.BoolScalableSettingValue
+- AssemblyName: Unity.RenderPipelines.HighDefinition.Runtime
+  ClassName: UnityEngine.Rendering.HighDefinition.FrameSettings
+- AssemblyName: Unity.RenderPipelines.HighDefinition.Runtime
+  ClassName: UnityEngine.Rendering.HighDefinition.FrameSettingsOverrideMask
+- AssemblyName: Unity.RenderPipelines.HighDefinition.Runtime
+  ClassName: UnityEngine.Rendering.HighDefinition.HDPhysicalCamera
+- AssemblyName: Unity.RenderPipelines.HighDefinition.Runtime
+  ClassName: UnityEngine.Rendering.HighDefinition.IntScalableSettingValue
+- AssemblyName: Unity.RenderPipelines.HighDefinition.Runtime
+  ClassName: UnityEngine.Rendering.HighDefinition.ObsoleteFrameSettings
+- AssemblyName: Unity.RenderPipelines.HighDefinition.Runtime
+  ClassName: UnityEngine.Rendering.HighDefinition.ObsoleteLightLoopSettings
+- AssemblyName: UnityEngine.CoreModule
+  ClassName: UnityEngine.Events.PersistentCallGroup
+- AssemblyName: com.github.teamxiaolan.dawnlib.dusk
+  ClassName: Dusk.AssetBundleData
+- AssemblyName: com.github.teamxiaolan.dawnlib.dusk
+  ClassName: Dusk.ShopItemPreset
+- AssemblyName: com.github.teamxiaolan.dawnlib
+  ClassName: Dawn.NamespacedKey
+Assets:
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r10.png
+- Assets/Content/Item/Camera/Camcorder/Audio/buttonhold.ogg
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c04.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u08.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u04.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u11.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r02.png
+- Assets/Content/Item/Camera/Cassette/Prefabs/cassette.prefab
+- Assets/Content/Item/Camera/Camcorder/Animations/CameraHoldLeft.anim
+- Assets/Content/Item/Camera/Camcorder/Materials/PauseMaterial.mat
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r01.png
+- Assets/Content/Item/Camera/Camcorder/Materials/ScreenMaterial.mat
+- Assets/Content/Item/Camera/Camcorder/Audio/buttonpress.ogg
+- Assets/Content/Item/Camera/Shaders/Camcorder.shader
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u05.png
+- Assets/Content/Item/Camera/Camcorder/Item/VideoCameraItem.asset
+- Assets/Content/Item/Camera/Camcorder/Materials/BlackLight.mat
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c05.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r07.png
+- Assets/Content/Item/Camera/Shaders/VeilGlare.shader
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c01.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_l00.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c07.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u02.png
+- Assets/Content/Item/Camera/Camcorder/Audio/filmcamerarunning.ogg
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_h00.png
+- Assets/Content/Item/Camera/Camcorder/Materials/RedLight.mat
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u03.png
+- Assets/Content/Item/Camera/Camcorder/Audio/lensbreak2.ogg
+- Assets/Content/Item/Camera/Camcorder/Item/VideoCameraContainer.asset
+- Assets/Content/Item/Camera/Shaders/NightVision.shader
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u06.png
+- Assets/Content/Item/Camera/Cassette/Item/CassetteItem.asset
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u01.png
+- Assets/Content/Item/Camera/Camcorder/Animations/CameraHoldPose.anim
+- Assets/Content/Item/Camera/Cassette/Audio/cassetteeject.ogg
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r06.png
+- Assets/Content/Item/Camera/Camcorder/Item/CamcorderIcon.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_g00.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u07.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_x00.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r04.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c00.png
+- Assets/Content/Item/Camera/Camcorder/Audio/zoom.ogg
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r05.png
+- Assets/Content/Item/Camera/Deck/Prefabs/CassetteDeck.prefab
+- Assets/Content/Item/Camera/Shaders/CrackApply.shader
+- Assets/Content/Item/Camera/Shaders/CrackBake.shader
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c02.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r03.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c10.png
+- Assets/Content/Item/Camera/Registry/CameraDefinition.asset
+- Assets/Content/Item/Camera/Camcorder/Prefabs/OperatorScreenLight.prefab
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c11.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r09.png
+- Assets/Content/Item/Camera/Camcorder/Audio/camerahandling.ogg
+- Assets/Content/Item/Camera/Camcorder/Item/VideoCameraInformation.asset
+- Assets/Content/Item/Camera/Camcorder/RenderTextures/CamScreenTexture.renderTexture
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u00.png
+- Assets/Content/Item/Camera/Camcorder/Audio/shutterclick.ogg
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c09.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r00.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c08.png
+- Assets/Content/Item/Camera/Camcorder/Audio/lensbreak.ogg
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u10.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r08.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u09.png
+- Assets/Content/Item/Camera/Cassette/Item/CassetteIcon.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c06.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c03.png
+- Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r11.png
+- Assets/Content/Item/Camera/Shaders/RainPrep.shader
+- Assets/Content/Item/Camera/Camcorder/Prefabs/CamcorderItem.prefab
+Dependencies: []
