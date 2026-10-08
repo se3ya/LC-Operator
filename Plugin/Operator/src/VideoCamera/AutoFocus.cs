@@ -50,7 +50,7 @@ internal sealed partial class VideoCameraItem
         float huntOffset = 0f;
         if (focusMode == CameraFocusMode.Auto)
         {
-            float luma = 0.2126f * _rawAmbient.r + 0.7152f * _rawAmbient.g + 0.0722f * _rawAmbient.b;
+            float luma = (0.2126f * _rawAmbient.r) + (0.7152f * _rawAmbient.g) + (0.0722f * _rawAmbient.b);
             float dark = 1f - Mathf.Clamp01(luma / Constants.Focus.DarkLumaThreshold);
             if (_nvAmount > 0.5f) dark = 0f;
 
@@ -72,7 +72,7 @@ internal sealed partial class VideoCameraItem
             if (_afNextIdleHunt < 0f) ScheduleIdleHunt(now, dark);
             if (now >= _afNextIdleHunt)
             {
-                StartFocusHunt(Constants.Focus.HuntAmplitude * (0.6f + 0.8f * dark));
+                StartFocusHunt(Constants.Focus.HuntAmplitude * (0.6f + (0.8f * dark)));
                 ScheduleIdleHunt(now, dark);
             }
 
@@ -127,7 +127,7 @@ internal sealed partial class VideoCameraItem
                 if (rackDir != 0f)
                 {
                     _afLensDiopter = Mathf.Clamp(
-                        _afLensDiopter + rackDir * Constants.Focus.ManualRackSpeed * speedCfg * dt,
+                        _afLensDiopter + (rackDir * Constants.Focus.ManualRackSpeed * speedCfg * dt),
                         1f / Constants.Focus.ManualFarLimit,
                         1f / Constants.Focus.ManualNearLimit);
                 }
@@ -145,7 +145,7 @@ internal sealed partial class VideoCameraItem
             float area = 0f;
             for (int i = 0; i < _afRays.Length; i++)
             {
-                area += Mathf.Max(0f, Mathf.Abs(_afLensDiopter - 1f / _afRays[i]) - Constants.Focus.RetargetThreshold);
+                area += Mathf.Max(0f, Mathf.Abs(_afLensDiopter - (1f / _afRays[i])) - Constants.Focus.RetargetThreshold);
             }
             area /= _afRays.Length;
             float tau = Mathf.Abs(_afLensDiopter - _afTargetDiopter) > 0.001f
@@ -222,7 +222,7 @@ internal sealed partial class VideoCameraItem
     private void ScheduleIdleHunt(float now, float dark)
     {
         float scale = Mathf.Lerp(1f, Constants.Focus.DarkHuntTimeScale, dark);
-        _afNextIdleHunt = now + Random.Range(Constants.Focus.MinIdleHuntInterval, Constants.Focus.MaxIdleHuntInterval) * scale;
+        _afNextIdleHunt = now + (Random.Range(Constants.Focus.MinIdleHuntInterval, Constants.Focus.MaxIdleHuntInterval) * scale);
     }
 
     private void DrawAutoFocusBlur()

@@ -310,8 +310,8 @@ internal static class AssetsLoader
             {
                 for (int c = 0; c < channels; c++)
                 {
-                    int a = i * channels + c;
-                    int b = j * channels + c;
+                    int a = (i * channels) + c;
+                    int b = (j * channels) + c;
                     (data[a], data[b]) = (data[b], data[a]);
                 }
             }

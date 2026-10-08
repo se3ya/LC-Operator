@@ -7,7 +7,6 @@ namespace Operator.Cassette;
 
 internal static partial class TerminalCassettePlayback
 {
-
     internal static void OnTerminalAwake()
     {
         _keywordsRegistered = false;
@@ -349,7 +348,7 @@ internal static partial class TerminalCassettePlayback
             return;
         }
 
-        if (!string.IsNullOrEmpty(text) && !text.EndsWith("\n", StringComparison.Ordinal))
+        if (!string.IsNullOrEmpty(text) && !text.EndsWith('\n'))
         {
             text += "\n";
         }
@@ -402,5 +401,4 @@ internal static partial class TerminalCassettePlayback
     {
         return text.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
     }
-
 }

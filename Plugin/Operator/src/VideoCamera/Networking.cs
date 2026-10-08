@@ -2,7 +2,6 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 
-
 namespace Operator;
 
 internal sealed partial class VideoCameraItem
@@ -244,5 +243,4 @@ internal sealed partial class VideoCameraItem
         RefreshTapeReels();
         RefreshTooltips();
     }
-
 }

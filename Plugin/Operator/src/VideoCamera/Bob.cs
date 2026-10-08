@@ -56,7 +56,7 @@ internal sealed partial class VideoCameraItem
         }
 
         float bobPitch = Mathf.Sin(_bobPhase * 2f * Mathf.PI) * pitchDeg;
-        float bobRoll = Mathf.Sin(_bobPhase * Mathf.PI + 0.5f) * rollDeg;
+        float bobRoll = Mathf.Sin((_bobPhase * Mathf.PI) + 0.5f) * rollDeg;
 
         if (grounded && !_wasGroundedLastFrame)
         {

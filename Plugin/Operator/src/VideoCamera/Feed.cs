@@ -740,9 +740,9 @@ internal sealed partial class VideoCameraItem
     private Vector3 GetLensPosition(Transform eyeTransform)
     {
         Vector3 fallback = eyeTransform.position
-                           + eyeTransform.forward * Constants.Visual.RemoteLensForward
-                           + eyeTransform.right * Constants.Visual.RemoteLensRight
-                           - eyeTransform.up * Constants.Visual.RemoteLensDown;
+                           + (eyeTransform.forward * Constants.Visual.RemoteLensForward)
+                           + (eyeTransform.right * Constants.Visual.RemoteLensRight)
+                           - (eyeTransform.up * Constants.Visual.RemoteLensDown);
 
         Transform? socket = playerHeldBy.localItemHolder;
         if (socket == null || itemProperties == null) return fallback;
@@ -750,8 +750,8 @@ internal sealed partial class VideoCameraItem
 
         Quaternion lensRotation = socket.rotation * Quaternion.Euler(itemProperties.rotationOffset);
         Vector3 lens = socket.position
-                       + socket.rotation * itemProperties.positionOffset
-                       + lensRotation * _frontCameraLocalPos;
+                       + (socket.rotation * itemProperties.positionOffset)
+                       + (lensRotation * _frontCameraLocalPos);
 
         float reach = Constants.Visual.RemoteLensReach;
         return (lens - eyeTransform.position).sqrMagnitude > reach * reach ? fallback : lens;
@@ -892,6 +892,5 @@ internal sealed partial class VideoCameraItem
         {
             _screenMaterial.SetColor("_EmissionColor", emission);
         }
-
     }
 }

@@ -64,7 +64,7 @@ internal sealed class ShadowVoiceChat
         _reported = -1;
     }
 
-    internal void Tick(Transform camera, bool cameraInside)
+    internal void Update(Transform camera, bool cameraInside)
     {
         if (camera == null)
         {

@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 
-
 namespace Operator;
 
 internal sealed partial class VideoCameraItem
@@ -188,7 +187,7 @@ internal sealed partial class VideoCameraItem
         if (!dropped || _cameraMode.Value) return false;
 
         Transform t = active.transform;
-        return IsLineBlocked(t.position - t.forward * Constants.Visual.OcclusionDroppedReach, t.position, mask);
+        return IsLineBlocked(t.position - (t.forward * Constants.Visual.OcclusionDroppedReach), t.position, mask);
     }
 
     private static bool HitsNearPlane(Camera active, float depth, int mask)
@@ -199,7 +198,7 @@ internal sealed partial class VideoCameraItem
         for (int i = 0; i < _nearPlanePoints.Length; i++)
         {
             Vector2 p = _nearPlanePoints[i];
-            Vector3 end = lens + rot * new Vector3(p.x * x, p.y * y, depth);
+            Vector3 end = lens + (rot * new Vector3(p.x * x, p.y * y, depth));
             if (IsLineBlocked(lens, end, mask)) return true;
         }
         return false;
@@ -254,6 +253,7 @@ internal sealed partial class VideoCameraItem
     private void DrawVignetteClosing(float t)
     {
         CreateVignetteTexture();
+        if (_occlusionVignetteTexture == null) return;
         CreateBlackTexture();
 
         ApplyProximityBlur(t);
@@ -261,7 +261,7 @@ internal sealed partial class VideoCameraItem
         _occlusionOverlayMaterial!.color = new Color(0f, 0f, 0f, t);
         Graphics.Blit(_occlusionVignetteTexture, _feedTexture, _occlusionOverlayMaterial);
 
-        float centreFill = Mathf.Clamp01(t * 1.6f - 0.6f);
+        float centreFill = Mathf.Clamp01((t * 1.6f) - 0.6f);
         if (centreFill > 0f)
         {
             _occlusionOverlayMaterial.color = new Color(0f, 0f, 0f, centreFill);
@@ -272,6 +272,7 @@ internal sealed partial class VideoCameraItem
     private void DrawVignetteSmear(float t)
     {
         CreateVignetteTexture();
+        if (_occlusionVignetteTexture == null) return;
         CreateBlackTexture();
         CreateBlurTextures();
 
@@ -293,7 +294,7 @@ internal sealed partial class VideoCameraItem
         _occlusionOverlayMaterial.mainTextureOffset = Vector2.zero;
         Graphics.Blit(_occlusionVignetteTexture, _feedTexture, _occlusionOverlayMaterial);
 
-        float centreFill = Mathf.Clamp01(t * 1.6f - 0.6f);
+        float centreFill = Mathf.Clamp01((t * 1.6f) - 0.6f);
         if (centreFill > 0f)
         {
             _occlusionOverlayMaterial.color = new Color(0f, 0f, 0f, centreFill);
@@ -334,29 +335,7 @@ internal sealed partial class VideoCameraItem
     private void CreateVignetteTexture()
     {
         if (_occlusionVignetteTexture != null) return;
-        int size = Constants.Visual.OcclusionVignetteTextureSize;
-        var tex = new Texture2D(size, size, TextureFormat.RGBA32, mipChain: false, linear: false)
-        {
-            name = "VideoCamOcclVignette",
-            wrapMode = TextureWrapMode.Clamp,
-            filterMode = FilterMode.Bilinear,
-        };
-        var pixels = new Color32[size * size];
-        float half = size * 0.5f;
-        for (int y = 0; y < size; y++)
-        {
-            for (int x = 0; x < size; x++)
-            {
-                float dx = (x - half) / half;
-                float dy = (y - half) / half;
-                float r = Mathf.Sqrt(dx * dx + dy * dy);
-                float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.25f, 1f, r));
-                pixels[y * size + x] = new Color32(0, 0, 0, (byte)Mathf.RoundToInt(a * 255f));
-            }
-        }
-        tex.SetPixels32(pixels);
-        tex.Apply(updateMipmaps: false, makeNoLongerReadable: false);
-        _occlusionVignetteTexture = tex;
+        _occlusionVignetteTexture = AssetsLoader.LoadOptionalAsset<Texture2D>(Constants.Visual.OcclusionVignetteAsset);
     }
 
     private void CreateBlurTextures()

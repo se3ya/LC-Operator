@@ -506,7 +506,7 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
         if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit hit, 4f, 1 << 9, QueryTriggerInteraction.Collide)) return;
         if (hit.collider == null || hit.collider.transform != _volumeTrigger) return;
 
-        float v = Mathf.Clamp(TelevisionPlayback.LocalVolume + Mathf.Sign(scrollY) * Constants.Television.VolumeStep,
+        float v = Mathf.Clamp(TelevisionPlayback.LocalVolume + (Mathf.Sign(scrollY) * Constants.Television.VolumeStep),
             Constants.Television.VolumeMin, 1f);
         TelevisionPlayback.SetLocalVolume(v);
         UpdateKnobRotation(v);
@@ -526,13 +526,13 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
 
         float steps = (Mathf.Clamp(volume, Constants.Television.VolumeMin, 1f) - Constants.Television.VolumeMin)
                     / Constants.Television.VolumeStep;
-        float target = Constants.Television.VolumeMinAngle - Constants.Television.VolumeStepAngle * steps;
+        float target = Constants.Television.VolumeMinAngle - (Constants.Television.VolumeStepAngle * steps);
         Quaternion turn = Quaternion.AngleAxis(_dialRestAngle - target, _knobAxisLocal);
         _volumeKnob.localRotation = turn * _knobRest;
 
         if (_volumeArrow == null) return;
         _volumeArrow.SetLocalPositionAndRotation(
-            _knobPivotLocal + turn * (_arrowRestPos - _knobPivotLocal),
+            _knobPivotLocal + (turn * (_arrowRestPos - _knobPivotLocal)),
             turn * _arrowRestRot);
     }
 
@@ -582,8 +582,8 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
     {
         if (_visual == null) return;
         GetSlotGeometry(out Vector3 mid, out Vector3 outward, out Quaternion rot);
-        Vector3 outsidePos = mid + outward * Constants.Television.SlotOutsideOffset;
-        Vector3 insidePos = mid - outward * Constants.Television.SlotInsideDepth;
+        Vector3 outsidePos = mid + (outward * Constants.Television.SlotOutsideOffset);
+        Vector3 insidePos = mid - (outward * Constants.Television.SlotInsideDepth);
 
         float draw = Settle(t, Constants.Television.InsertDrawStart, Constants.Television.InsertDrawEnd);
         float drop = Settle(t, Constants.Television.InsertDropStart, Constants.Television.InsertDropEnd);
@@ -601,7 +601,7 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
     private static float Settle(float t, float start, float end)
     {
         float x = Mathf.Clamp01((t - start) / Mathf.Max(0.001f, end - start));
-        return x * x * (3f - 2f * x);
+        return x * x * (3f - (2f * x));
     }
 
     private void SetupFlapPhysics()
@@ -683,7 +683,7 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
     {
         GetSlotGeometry(out Vector3 mid, out Vector3 outward, out Quaternion r);
         dir = outward;
-        pos = mid + outward * Constants.Television.SlotOutsideOffset;
+        pos = mid + (outward * Constants.Television.SlotOutsideOffset);
         rot = r;
     }
 

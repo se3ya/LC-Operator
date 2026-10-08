@@ -27,17 +27,17 @@ internal sealed class CamcorderMic
 
         internal float Left(float x)
         {
-            float y = _b0 * x + _leftOne;
-            _leftOne = _b1 * x - _a1 * y + _leftTwo;
-            _leftTwo = _b2 * x - _a2 * y;
+            float y = (_b0 * x) + _leftOne;
+            _leftOne = (_b1 * x) - (_a1 * y) + _leftTwo;
+            _leftTwo = (_b2 * x) - (_a2 * y);
             return y;
         }
 
         internal float Right(float x)
         {
-            float y = _b0 * x + _rightOne;
-            _rightOne = _b1 * x - _a1 * y + _rightTwo;
-            _rightTwo = _b2 * x - _a2 * y;
+            float y = (_b0 * x) + _rightOne;
+            _rightOne = (_b1 * x) - (_a1 * y) + _rightTwo;
+            _rightTwo = (_b2 * x) - (_a2 * y);
             return y;
         }
     }
@@ -117,7 +117,7 @@ internal sealed class CamcorderMic
             float noiseOne = NextNoise() * amplitude;
             float noiseTwo = NextNoise() * amplitude;
             left += noiseOne;
-            right += 0.8f * noiseOne + 0.6f * noiseTwo;
+            right += (0.8f * noiseOne) + (0.6f * noiseTwo);
 
             left = _highPass.Left(left);
             right = _highPass.Right(right);
@@ -189,7 +189,7 @@ internal sealed class CamcorderMic
     private static float SoftClip(float x)
     {
         float v = Mathf.Clamp(x * Constants.Audio.MicClipDrive, -3f, 3f);
-        return v * (27f + v * v) / (27f + 9f * v * v);
+        return v * (27f + (v * v)) / (27f + (9f * v * v));
     }
 
     private float NextNoise()
@@ -197,7 +197,7 @@ internal sealed class CamcorderMic
         _noiseRng ^= _noiseRng << 13;
         _noiseRng ^= _noiseRng >> 17;
         _noiseRng ^= _noiseRng << 5;
-        return (_noiseRng & 0xFFFF) / 32768f - 1f;
+        return ((_noiseRng & 0xFFFF) / 32768f) - 1f;
     }
 
     private static float Decibels(float value) => Mathf.Pow(10f, value / 20f);
@@ -226,6 +226,6 @@ internal sealed class CamcorderMic
         float w = 2f * Mathf.PI * frequency / _sampleRate;
         float cos = Mathf.Cos(w);
         float alpha = Mathf.Sin(w) / (2f * q);
-        filter.Set(1f + alpha * a, -2f * cos, 1f - alpha * a, 1f + alpha / a, -2f * cos, 1f - alpha / a);
+        filter.Set(1f + (alpha * a), -2f * cos, 1f - (alpha * a), 1f + (alpha / a), -2f * cos, 1f - (alpha / a));
     }
 }

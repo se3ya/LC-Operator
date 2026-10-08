@@ -307,7 +307,8 @@ internal static class Constants
         public const float OcclusionNearPlaneEngage = 0.01f;
         public const float OcclusionNearPlaneRelease = 0.04f;
         public const float OcclusionDroppedReach = 0.78f;
-        public const int OcclusionVignetteTextureSize = 128;
+        public const string OcclusionVignetteAsset = "OcclusionVignette";
+        public const string OsdFontAsset = "OsdFont";
 
         public static readonly bool BobEnabled = true;
         public const float BobWalkFrequency = 5.5f;

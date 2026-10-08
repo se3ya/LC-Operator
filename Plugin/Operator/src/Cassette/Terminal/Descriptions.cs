@@ -5,7 +5,6 @@ namespace Operator.Cassette;
 
 internal static partial class TerminalCassettePlayback
 {
-
     internal static void OnLoadNewNode(Terminal terminal, TerminalNode? node)
     {
         if (terminal == null || node == null) return;
@@ -265,5 +264,4 @@ internal static partial class TerminalCassettePlayback
         string body = message?.TrimEnd() ?? string.Empty;
         return "\n" + new string('\n', StatusTopPadding) + body + "\n\n";
     }
-
 }

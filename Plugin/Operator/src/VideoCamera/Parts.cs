@@ -60,7 +60,6 @@ internal sealed partial class VideoCameraItem
             if (reelRenderer != null) reels.Add(reelRenderer);
         }
         _tapeReels = reels.ToArray();
-
     }
 
     private void HideLensCover()
@@ -200,7 +199,7 @@ internal sealed partial class VideoCameraItem
         if (_recordingState.Value)
         {
             float noise = Mathf.PerlinNoise(Time.time * 3f, 0.37f);
-            tremble = Mathf.Sin(Time.time * Constants.Parts.NeedleTrembleRate) * Constants.Parts.NeedleTremble * (0.6f + 0.4f * noise);
+            tremble = Mathf.Sin(Time.time * Constants.Parts.NeedleTrembleRate) * Constants.Parts.NeedleTremble * (0.6f + (0.4f * noise));
         }
         _needle.localRotation = _needleRest * Quaternion.Euler(_needleAngle + tremble, 0f, 0f);
     }

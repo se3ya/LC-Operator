@@ -132,7 +132,7 @@ internal static class TerminalCoWatch
         TerminalCassettePlayback.ApplyPrepareLocally(fileName);
     }
 
-    internal static void Tick()
+    internal static void Update()
     {
         if (!Enabled)
         {
@@ -143,7 +143,7 @@ internal static class TerminalCoWatch
 
         if (_localPrepareFile.Length > 0)
         {
-            TickLocalPrepare();
+            UpdateLocalPrepare();
         }
 
         if (IsServer && _prepareFile.Length > 0)
@@ -152,7 +152,7 @@ internal static class TerminalCoWatch
         }
     }
 
-    private static void TickLocalPrepare()
+    private static void UpdateLocalPrepare()
     {
         double now = Time.realtimeSinceStartupAsDouble;
         if (now >= _nextFileCheck)

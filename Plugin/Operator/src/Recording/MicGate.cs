@@ -124,7 +124,7 @@ internal sealed class MicGate
         {
             if (level < goal) level = Math.Min(goal, level + step);
             else if (level > goal) level = Math.Max(goal, level - step);
-            output[i] = source[offset + i] * level * (from + slope * (i + 1));
+            output[i] = source[offset + i] * level * (from + (slope * (i + 1)));
         }
 
         if (goal <= 0f && level < step) level = 0f;

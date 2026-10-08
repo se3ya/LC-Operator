@@ -20,7 +20,7 @@ internal sealed class CassetteShimmer : MonoBehaviour
     {
         if (_renderer == null || !_renderer.isVisible) return;
 
-        float hue = Mathf.Repeat(_phase + Time.time * Constants.Cassette.HoloShimmerSpeed, 1f);
+        float hue = Mathf.Repeat(_phase + (Time.time * Constants.Cassette.HoloShimmerSpeed), 1f);
         Color tint = Color.HSVToRGB(hue, Constants.Cassette.HoloShimmerSaturation, 1f);
         CassetteShellColor.SetBand(_renderer, CassetteTier.Holo, _misprint, tint);
     }

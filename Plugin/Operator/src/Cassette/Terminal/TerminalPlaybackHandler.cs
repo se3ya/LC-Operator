@@ -21,9 +21,9 @@ internal sealed class TerminalPlaybackHandler : MonoBehaviour
 
         double start = Time.realtimeSinceStartupAsDouble;
 
-        TerminalCoWatch.Tick();
-        MonitorPlayback.Tick();
-        TickPendingReceive(_terminal);
+        TerminalCoWatch.Update();
+        MonitorPlayback.Update();
+        UpdatePendingReceive(_terminal);
 
         if (IsIdle())
         {
@@ -51,10 +51,10 @@ internal sealed class TerminalPlaybackHandler : MonoBehaviour
             + $"preparing {TerminalCoWatch.IsPreparingLocally}.");
     }
 
-    private static void TickPendingReceive(Terminal terminal)
+    private static void UpdatePendingReceive(Terminal terminal)
     {
         if (!TerminalCassettePlayback.IsWaitingForFile) return;
-        TerminalCassettePlayback.TickPendingReceive(terminal);
+        TerminalCassettePlayback.UpdatePendingReceive(terminal);
     }
 
     private static bool IsIdle()

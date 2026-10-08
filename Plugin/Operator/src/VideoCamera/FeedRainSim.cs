@@ -22,9 +22,9 @@ internal sealed class FeedCrackFlow
         byte[]? g = _grid;
         if (g == null) return 0;
         int gx = (int)(canvasX / FeedRainSim.CanvasW * GridW);
-        int gy = (int)((1f - canvasY / FeedRainSim.CanvasH) * GridH);
+        int gy = (int)((1f - (canvasY / FeedRainSim.CanvasH)) * GridH);
         if (gx < 0 || gx >= GridW || gy < 0 || gy >= GridH) return 0;
-        return g[gy * GridW + gx];
+        return g[(gy * GridW) + gx];
     }
 }
 
@@ -199,19 +199,19 @@ internal sealed class FeedRainSim
         for (int i = _statics.Count - 1; i >= 0; i--)
         {
             Drop d = _statics[i];
-            if (TickDeath(d, dt)) { Recycle(_statics, i); continue; }
-            d.Birth = Mathf.Min(d.Birth + dt / BirthTime, 1f);
+            if (UpdateDeath(d, dt)) { Recycle(_statics, i); continue; }
+            d.Birth = Mathf.Min(d.Birth + (dt / BirthTime), 1f);
 
             d.Age += dt;
             if (d.Age > MaxStaticDwell && d.Die < 0f) { StartDie(d, DieTime); continue; }
 
             if (drying)
             {
-                d.Size -= (WetShrinkAbs * 0.5f + d.Size * dryK) * dt;
+                d.Size -= ((WetShrinkAbs * 0.5f) + (d.Size * dryK)) * dt;
             }
             else
             {
-                d.Size -= (WetShrinkAbs + d.Size * WetShrinkPerSec) * dt;
+                d.Size -= (WetShrinkAbs + (d.Size * WetShrinkPerSec)) * dt;
             }
 
             if (d.Size < KillRadius) { StartDie(d, DieTime); continue; }
@@ -233,8 +233,8 @@ internal sealed class FeedRainSim
         for (int i = _sliders.Count - 1; i >= 0; i--)
         {
             Drop d = _sliders[i];
-            if (TickDeath(d, dt)) { Recycle(_sliders, i); continue; }
-            d.Birth = Mathf.Min(d.Birth + dt / BirthTime, 1f);
+            if (UpdateDeath(d, dt)) { Recycle(_sliders, i); continue; }
+            d.Birth = Mathf.Min(d.Birth + (dt / BirthTime), 1f);
 
             if (dryK > 0f) d.Size -= d.Size * dryK * 0.5f * dt;
             if (d.Size < KillRadius) { StartDie(d, DieTime); continue; }
@@ -255,16 +255,16 @@ internal sealed class FeedRainSim
             }
 
             float terminal = (TerminalBase
-                + TerminalSizeK * Mathf.Max(d.Size - TerminalRefSize, 0f)) * slideMul
+                + (TerminalSizeK * Mathf.Max(d.Size - TerminalRefSize, 0f))) * slideMul
                 * (onCrack ? CrackHugSlow : 1f);
             float kFall = 1f - Mathf.Exp(-dt / FallTau);
             d.Vel.y = Mathf.Lerp(d.Vel.y, -terminal * fallMul, kFall);
 
             d.MeanderPhase += d.MeanderFreq * dt;
-            float curve = (d.Pos.x / CanvasW - 0.5f) * 2f * CurveGain * slideMul;
+            float curve = ((d.Pos.x / CanvasW) - 0.5f) * 2f * CurveGain * slideMul;
             float sideTarget = onCrack
-                ? windX * 0.3f + crackSteer
-                : windX + curve + Mathf.Sin(d.MeanderPhase) * d.MeanderAmp;
+                ? (windX * 0.3f) + crackSteer
+                : windX + curve + (Mathf.Sin(d.MeanderPhase) * d.MeanderAmp);
             float kSide = 1f - Mathf.Exp(-dt / SideTau);
             d.Vel.x = Mathf.Lerp(d.Vel.x, sideTarget, kSide);
 
@@ -287,7 +287,7 @@ internal sealed class FeedRainSim
                 d.NextTrailAt = TrailSpacing * (onCrack ? CrackWetSpacing : 1f)
                     * Random.Range(1f - TrailSpacingJitter, 1f + TrailSpacingJitter);
                 Vector2 dir = d.Vel.sqrMagnitude > 1e-4f ? d.Vel.normalized : Vector2.down;
-                Vector2 tail = d.Pos - dir * (d.Size * 0.9f);
+                Vector2 tail = d.Pos - (dir * (d.Size * 0.9f));
                 SpawnBead(tail, d.Size * TrailBeadFrac * Random.Range(0.7f, 1.15f), d.Seed);
                 d.Size *= 1f - WeightLossPerBead;
             }
@@ -308,10 +308,10 @@ internal sealed class FeedRainSim
         for (int i = _beads.Count - 1; i >= 0; i--)
         {
             Drop d = _beads[i];
-            if (TickDeath(d, dt)) { Recycle(_beads, i); continue; }
-            d.Birth = Mathf.Min(d.Birth + dt / (BirthTime * 0.5f), 1f);
+            if (UpdateDeath(d, dt)) { Recycle(_beads, i); continue; }
+            d.Birth = Mathf.Min(d.Birth + (dt / (BirthTime * 0.5f)), 1f);
 
-            d.Size -= (BeadShrinkPerSec + d.Size * dryK * BeadDryMul) * dt;
+            d.Size -= (BeadShrinkPerSec + (d.Size * dryK * BeadDryMul)) * dt;
             if (d.Size < KillRadius) StartDie(d, DieTime);
         }
     }
@@ -325,7 +325,7 @@ internal sealed class FeedRainSim
             float reach = 0.8f * (s.Size + t.Size);
             if ((t.Pos - s.Pos).sqrMagnitude < reach * reach)
             {
-                s.Size = Mathf.Min(Mathf.Sqrt(s.Size * s.Size + AbsorbGain * t.Size * t.Size), MaxRadius);
+                s.Size = Mathf.Min(Mathf.Sqrt((s.Size * s.Size) + (AbsorbGain * t.Size * t.Size)), MaxRadius);
                 StartDie(t, MergeDieTime);
             }
         }
@@ -383,8 +383,8 @@ internal sealed class FeedRainSim
                 m.Kind = Kind.Static;
                 float ang = Random.value * 6.2832f;
                 float dist = d.Size * Random.Range(1.6f, 2.6f);
-                float mx = Mathf.Clamp(d.Pos.x + Mathf.Cos(ang) * dist, 0f, CanvasW);
-                m.Pos = new Vector2(mx, Mathf.Clamp(d.Pos.y + Mathf.Sin(ang) * dist,
+                float mx = Mathf.Clamp(d.Pos.x + (Mathf.Cos(ang) * dist), 0f, CanvasW);
+                m.Pos = new Vector2(mx, Mathf.Clamp(d.Pos.y + (Mathf.Sin(ang) * dist),
                     StaticEdgeMargin, CanvasH - StaticEdgeMargin));
                 m.Vel = Vector2.zero;
                 m.Size = Random.Range(1.6f, 2.6f) * sizeMul;
@@ -420,7 +420,7 @@ internal sealed class FeedRainSim
         d.Size = size;
         d.Aspect = Random.Range(0.85f, 1.0f);
         d.Rot = 0f;
-        d.Seed = parentSeed + Random.value * 37f;
+        d.Seed = parentSeed + (Random.value * 37f);
         _beads.Add(d);
     }
 
@@ -458,14 +458,14 @@ internal sealed class FeedRainSim
         if (b < 0.55f)
         {
             float t = b / 0.55f;
-            return t * t * (3f - 2f * t) * SplatOvershoot;
+            return t * t * (3f - (2f * t)) * SplatOvershoot;
         }
         float u = (b - 0.55f) / 0.45f;
-        u = u * u * (3f - 2f * u);
+        u = u * u * (3f - (2f * u));
         return Mathf.Lerp(SplatOvershoot, 1f, u);
     }
 
-    private static bool TickDeath(Drop d, float dt)
+    private static bool UpdateDeath(Drop d, float dt)
     {
         if (d.Die < 0f) return false;
         d.Die -= d.DieRate * dt;
@@ -522,7 +522,7 @@ internal sealed class FeedRainSim
         for (int i = 0; i < list.Count && n < MaxGpuDrops; i++)
         {
             Drop d = list[i];
-            float die = d.Die >= 0f ? d.Die * d.Die * (3f - 2f * d.Die) : 1f;
+            float die = d.Die >= 0f ? d.Die * d.Die * (3f - (2f * d.Die)) : 1f;
             float scale = BirthScale(d.Birth) * die;
             if (scale <= 0.01f) continue;
 
@@ -533,12 +533,12 @@ internal sealed class FeedRainSim
             {
                 float stretch = Mathf.Min(d.Vel.magnitude * SliderStretchK, SliderStretchMax);
                 ry *= 1f + stretch;
-                rx *= 1f - stretch * 0.30f;
-                rot = Mathf.Atan2(d.Vel.y, d.Vel.x) + Mathf.PI * 0.5f;
+                rx *= 1f - (stretch * 0.30f);
+                rot = Mathf.Atan2(d.Vel.y, d.Vel.x) + (Mathf.PI * 0.5f);
             }
 
             GpuData[n * 2] = new Vector4(d.Pos.x, d.Pos.y, rx * scale, ry * scale);
-            GpuData[n * 2 + 1] = new Vector4(Mathf.Cos(rot), Mathf.Sin(rot), d.Seed, 1f);
+            GpuData[(n * 2) + 1] = new Vector4(Mathf.Cos(rot), Mathf.Sin(rot), d.Seed, 1f);
             n++;
         }
         return n;

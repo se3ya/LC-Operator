@@ -13,7 +13,7 @@ internal static class VoiceFalloff
             : Constants.Audio.EchoOutdoorDistance;
         float range = Mathf.Max(1f, VideoCameraConfig.VoiceRange.Value);
         float level = VoiceCurve.At(source, near * Constants.Audio.VoiceRange / range);
-        float norm = Mathf.Sqrt(1f / (near * near) + 1f / (echo * echo));
+        float norm = Mathf.Sqrt((1f / (near * near)) + (1f / (echo * echo)));
         float nearFactor = Mathf.Max(
             Constants.Audio.NearFloor,
             Mathf.Pow(Constants.Audio.NearReference / Mathf.Max(near, Constants.Audio.NearReference), Constants.Audio.NearExponent));
@@ -56,12 +56,12 @@ internal static class VoiceFalloff
 
         float half = Constants.Audio.VoiceSpread * Mathf.Deg2Rad * 0.5f;
         float side = Mathf.Sin(half);
-        float centre = 0.5f * Mathf.Sqrt(2f - side * side);
+        float centre = 0.5f * Mathf.Sqrt(2f - (side * side));
 
         Vector3 unit = toMouth / distance;
         float x = Vector3.Dot(unit, right);
         float z = Vector3.Dot(unit, forward);
-        float horizontal = Mathf.Sqrt(x * x + z * z);
+        float horizontal = Mathf.Sqrt((x * x) + (z * z));
         float azimuth = Mathf.Atan2(x, z);
 
         float a = horizontal * Mathf.Sin(azimuth - half);
@@ -78,7 +78,7 @@ internal static class VoiceFalloff
         }
     }
 
-    private static float PanLeft(float pan) => (Mathf.Sqrt(2f - pan * pan) - pan) * 0.5f;
+    private static float PanLeft(float pan) => (Mathf.Sqrt(2f - (pan * pan)) - pan) * 0.5f;
 
-    private static float PanRight(float pan) => (Mathf.Sqrt(2f - pan * pan) + pan) * 0.5f;
+    private static float PanRight(float pan) => (Mathf.Sqrt(2f - (pan * pan)) + pan) * 0.5f;
 }

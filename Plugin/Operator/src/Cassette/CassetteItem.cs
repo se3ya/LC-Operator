@@ -288,7 +288,7 @@ public sealed class CassetteItem : GrabbableObject
         _tossBody.useGravity = true;
         _tossBody.velocity = Vector3.zero;
         _tossBody.angularVelocity = Vector3.zero;
-        _tossBody.AddForce(dir * outForce + Vector3.up * upForce, ForceMode.Impulse);
+        _tossBody.AddForce((dir * outForce) + (Vector3.up * upForce), ForceMode.Impulse);
         _tossBody.AddTorque(UnityEngine.Random.insideUnitSphere * outForce, ForceMode.Impulse);
 
         if (_settleRoutine != null) StopCoroutine(_settleRoutine);
@@ -347,8 +347,8 @@ public sealed class CassetteItem : GrabbableObject
         float climb = land.y - _arcStart.y + Constants.Camera.EjectClearance;
         if (climb > 0f) up = Mathf.Max(up, Mathf.Sqrt(2f * _arcGravity * climb));
         _arcUp = up;
-        float fall = Mathf.Max(0f, up * up / (2f * _arcGravity) + _arcStart.y - land.y);
-        _arcAir = up / _arcGravity + Mathf.Sqrt(2f * fall / _arcGravity);
+        float fall = Mathf.Max(0f, (up * up / (2f * _arcGravity)) + _arcStart.y - land.y);
+        _arcAir = (up / _arcGravity) + Mathf.Sqrt(2f * fall / _arcGravity);
         _arcHop = Constants.Camera.EjectHop * Mathf.Clamp01(fall);
         _arcTime = 0f;
         _arcLanded = false;
@@ -389,7 +389,7 @@ public sealed class CassetteItem : GrabbableObject
             float u = t / _arcAir;
             float e = Mathf.SmoothStep(0f, 1f, u);
             Vector3 pos = Vector3.Lerp(_arcStart, land, u);
-            pos.y = _arcStart.y + _arcUp * t - 0.5f * _arcGravity * t * t + (land.y - _arcLandY) * u;
+            pos.y = _arcStart.y + (_arcUp * t) - (0.5f * _arcGravity * t * t) + ((land.y - _arcLandY) * u);
             Quaternion tip = Quaternion.AngleAxis(_arcTip * e, _arcTipAxis) * _arcStartRot;
             transform.SetPositionAndRotation(pos, Quaternion.Slerp(Quaternion.identity, _arcTurn, e) * tip);
             return;

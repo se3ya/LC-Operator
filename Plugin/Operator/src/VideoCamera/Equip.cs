@@ -190,5 +190,4 @@ internal sealed partial class VideoCameraItem
             RequestLightsOff();
         }
     }
-
 }

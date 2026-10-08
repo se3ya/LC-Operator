@@ -238,7 +238,7 @@ internal sealed partial class VideoCameraItem
     private void PulseButtonPress(CameraButton button)
     {
         if (!IsOwner || !IsSpawned || NetworkObject == null || !NetworkObject.IsSpawned) return;
-        try { _buttonPressPulse.Value = (_buttonPressPulse.Value / ButtonCount + 1) * ButtonCount + (int)button; }
+        try { _buttonPressPulse.Value = (((_buttonPressPulse.Value / ButtonCount) + 1) * ButtonCount) + (int)button; }
         catch (Exception) { }
     }
 
@@ -330,7 +330,7 @@ internal sealed partial class VideoCameraItem
         _crackAudioSource.PlayOneShot(clip);
     }
 
-    private void TickSfx()
+    private void UpdateSfx()
     {
         if (_buttonPressAudioSource != null && _buttonPressAudioSource.isPlaying
             && _buttonPressAudioSource.time >= Constants.Sfx.ButtonPressEnd)

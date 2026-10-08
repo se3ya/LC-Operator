@@ -46,7 +46,7 @@ internal sealed class PitchShifter
 
             for (int c = 0; c < channels; c++)
             {
-                buffer[baseIdx + c] = Tap(_rings[c], rp1) * g1 + Tap(_rings[c], rp2) * g2;
+                buffer[baseIdx + c] = (Tap(_rings[c], rp1) * g1) + (Tap(_rings[c], rp2) * g2);
             }
 
             _delay += 1f - pitchRatio;
@@ -83,7 +83,7 @@ internal sealed class PitchShifter
         int i1 = i0 + 1;
         if (i1 >= RingSize) i1 = 0;
         float f = readPos - i0;
-        return ring[i0] + (ring[i1] - ring[i0]) * f;
+        return ring[i0] + ((ring[i1] - ring[i0]) * f);
     }
 
     private void InitChannels(int channels)

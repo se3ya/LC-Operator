@@ -92,7 +92,7 @@ internal sealed class FeedLamps
             if (light.type == LightType.Directional && light != sun) continue;
             if (!Eval(entry, pos, _outside, out _, out _, out Vector3 color)) continue;
             if (IsOwn(light, item, view, holder)) continue;
-            _ranked.Add((color.x * 0.2126f + color.y * 0.7152f + color.z * 0.0722f, entry));
+            _ranked.Add(((color.x * 0.2126f) + (color.y * 0.7152f) + (color.z * 0.0722f), entry));
         }
         _ranked.Sort((a, b) => b.score.CompareTo(a.score));
 
@@ -146,7 +146,7 @@ internal sealed class FeedLamps
             return;
         }
 
-        Vector3 end = light.transform.position - dir * 0.3f;
+        Vector3 end = light.transform.position - (dir * 0.3f);
         _visible[slot] = !Physics.Linecast(pos, end, mask, QueryTriggerInteraction.Ignore);
     }
 
@@ -211,7 +211,7 @@ internal sealed class FeedLamps
             dir = to / dist;
             if (light.type == LightType.Spot)
             {
-                float cone = Mathf.Cos((light.spotAngle * 0.5f + 5f) * Mathf.Deg2Rad);
+                float cone = Mathf.Cos(((light.spotAngle * 0.5f) + 5f) * Mathf.Deg2Rad);
                 if (Vector3.Dot(light.transform.forward, -dir) < cone) return false;
             }
 

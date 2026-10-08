@@ -94,7 +94,7 @@ internal sealed class FrameCapture : MonoBehaviour
 
     private void OnDisable() => FeedRenderer.RemoveCapture(this);
 
-    internal void Tick()
+    internal void CaptureFrame()
     {
         if (_stopped || _target == null || _pipe == null)
         {

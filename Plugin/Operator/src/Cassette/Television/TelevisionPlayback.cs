@@ -1,5 +1,4 @@
 using System;
-using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -72,13 +71,6 @@ internal static class TelevisionPlayback
     private static bool _missingFileLogged;
     private static float _nextTakeoverAttempt;
 
-    private static readonly AccessTools.FieldRef<TVScript, bool>? WasTvOnRef =
-        TryFieldRef<bool>("wasTvOnLastFrame");
-    private static readonly AccessTools.FieldRef<TVScript, int>? CurrentClipRef =
-        TryFieldRef<int>("currentClip");
-    private static readonly AccessTools.FieldRef<TVScript, float>? CurrentClipTimeRef =
-        TryFieldRef<float>("currentClipTime");
-
     internal static bool HasLoaded => !string.IsNullOrEmpty(_loadedFile);
     internal static string LoadedFileName => _loadedFile;
     internal static CassetteData LoadedData => _loadedData;
@@ -91,7 +83,7 @@ internal static class TelevisionPlayback
     {
         get
         {
-            double position = _clockRunning ? _clockBase + (Now - _clockStamp) * _speed : _clockBase;
+            double position = _clockRunning ? _clockBase + ((Now - _clockStamp) * _speed) : _clockBase;
             double end = _loadedData.Duration > 0f ? _loadedData.Duration : double.MaxValue;
             return Math.Min(Math.Max(0.0, position), end);
         }
@@ -186,12 +178,12 @@ internal static class TelevisionPlayback
         DestroyHost();
     }
 
-    internal static void Tick()
+    internal static void Update()
     {
         TVScript? tv = CassetteTakerManager.ActiveTv;
         if (tv != null && tv.tvOn != _tvOn) Retime(Position);
         if (_clockRunning && !_endRaised && _loadedData.Duration > 0f
-            && _clockBase + (Now - _clockStamp) * _speed >= _loadedData.Duration + Constants.Television.EndGrace)
+            && _clockBase + ((Now - _clockStamp) * _speed) >= _loadedData.Duration + Constants.Television.EndGrace)
         {
             _endRaised = true;
             LocalPlaybackFinished?.Invoke();
@@ -299,7 +291,7 @@ internal static class TelevisionPlayback
                     }
                 }
             }
-            if (WasTvOnRef != null) WasTvOnRef(_tv) = !_tv.tvOn;
+            _tv.wasTvOnLastFrame = !_tv.tvOn;
             RestoreLight();
             if (_tvLight != null) _tvLight.enabled = _tv.tvOn;
             RestoreVanillaAudio(_tv);
@@ -322,16 +314,15 @@ internal static class TelevisionPlayback
     private static void RestoreVanillaAudio(TVScript tv)
     {
         if (!tv.tvOn || tv.tvSFX == null || tv.tvAudioClips == null) return;
-        if (CurrentClipRef == null || CurrentClipTimeRef == null) return;
 
-        int clip = CurrentClipRef(tv);
+        int clip = tv.currentClip;
         if (clip < 0 || clip >= tv.tvAudioClips.Length) return;
 
         AudioClip? audio = tv.tvAudioClips[clip];
         if (audio == null) return;
 
         tv.tvSFX.clip = audio;
-        tv.tvSFX.time = Mathf.Clamp(CurrentClipTimeRef(tv), 0f, Mathf.Max(0f, audio.length - 0.1f));
+        tv.tvSFX.time = Mathf.Clamp(tv.currentClipTime, 0f, Mathf.Max(0f, audio.length - 0.1f));
         tv.tvSFX.Play();
     }
 
@@ -465,7 +456,7 @@ internal static class TelevisionPlayback
             Constants.Television.LightMax);
 
         float flicker = (Mathf.PerlinNoise(_noiseSeed, Time.time * Constants.Television.LightFlickerSpeed) - 0.5f) * 2f;
-        float intensity = _tvLightBaseIntensity * gain * factor * (1f + flicker * Constants.Television.LightFlickerAmount);
+        float intensity = _tvLightBaseIntensity * gain * factor * (1f + (flicker * Constants.Television.LightFlickerAmount));
 
         _tvLight.color = tint;
         if (_tvLightHd != null)
@@ -519,7 +510,7 @@ internal static class TelevisionPlayback
 
         Color mean = new(r / (255f * n), g / (255f * n), b / (255f * n), 1f);
         _ambientTarget = mean;
-        _ambientLumaTarget = 0.2126f * mean.r + 0.7152f * mean.g + 0.0722f * mean.b;
+        _ambientLumaTarget = (0.2126f * mean.r) + (0.7152f * mean.g) + (0.0722f * mean.b);
     }
 
     private static Color ToLightTint(Color c)
@@ -623,18 +614,5 @@ internal static class TelevisionPlayback
         _probeRt = null;
         _readbackPending = false;
         _preparedFile = string.Empty;
-    }
-
-    private static AccessTools.FieldRef<TVScript, T>? TryFieldRef<T>(string field)
-    {
-        try
-        {
-            var fi = AccessTools.Field(typeof(TVScript), field);
-            return fi != null ? AccessTools.FieldRefAccess<TVScript, T>(fi) : null;
-        }
-        catch
-        {
-            return null;
-        }
     }
 }

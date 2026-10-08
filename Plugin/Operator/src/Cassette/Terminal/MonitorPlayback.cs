@@ -106,11 +106,11 @@ internal static class MonitorPlayback
         return true;
     }
 
-    internal static void Tick()
+    internal static void Update()
     {
         if (!_active || !_monitorBound) return;
 
-        MonitorScreenLight.Tick();
+        MonitorScreenLight.Update();
 
         double now = Time.unscaledTimeAsDouble;
         if (now < _nextReapplyTime) return;

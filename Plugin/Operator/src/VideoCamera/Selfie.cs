@@ -58,7 +58,7 @@ internal sealed partial class VideoCameraItem
         Transform? hand = playerHeldBy.serverItemHolder;
         if (hand == null || itemProperties == null || !IsHoldPoseReady(playerHeldBy)) return default;
 
-        Vector3 position = hand.position + hand.rotation * itemProperties.positionOffset;
+        Vector3 position = hand.position + (hand.rotation * itemProperties.positionOffset);
         float reach = Constants.Visual.RemoteLensReach;
         if ((position - transform.position).sqrMagnitude > reach * reach) return default;
 

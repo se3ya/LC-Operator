@@ -11,7 +11,6 @@ namespace Operator;
 
 internal sealed partial class VideoCameraItem
 {
-
     private void OnRecordingFinalized(Recorder.RecordingResult result)
     {
         string fileName = string.IsNullOrEmpty(result.OutputPath) ? string.Empty : System.IO.Path.GetFileName(result.OutputPath);
@@ -672,12 +671,12 @@ internal sealed partial class VideoCameraItem
             && local != null && playerHeldBy == local)
         {
             Vector3 held = local.transform.position
-                         + local.transform.forward * 0.30f
-                         + Vector3.up * 0.60f;
+                         + (local.transform.forward * 0.30f)
+                         + (Vector3.up * 0.60f);
             return held;
         }
 
-        Vector3 fallback = transform.position + Vector3.up * 1.0f;
+        Vector3 fallback = transform.position + (Vector3.up * 1.0f);
         return fallback;
     }
 
@@ -811,7 +810,7 @@ internal sealed partial class VideoCameraItem
 
         Vector3 side = Vector3.Cross(Vector3.up, dir);
         float spread = Constants.Camera.EjectSpread;
-        Vector3 offset = dir * Constants.Camera.EjectDistance + side * UnityEngine.Random.Range(-spread, spread);
+        Vector3 offset = (dir * Constants.Camera.EjectDistance) + (side * UnityEngine.Random.Range(-spread, spread));
         float distance = offset.magnitude;
         Vector3 heading = offset / distance;
         if (Physics.SphereCast(release, Constants.Camera.EjectProbeRadius, heading, out RaycastHit wall, distance,
@@ -819,7 +818,7 @@ internal sealed partial class VideoCameraItem
         {
             distance = Mathf.Max(Constants.Camera.EjectWallGap, wall.distance - Constants.Camera.EjectWallGap);
         }
-        Vector3 land = release + heading * distance;
+        Vector3 land = release + (heading * distance);
 
         if (!TryFindFloor(land, Mathf.Max(release.y, land.y) + 1f, out float floorY)) return false;
         if (floorY > release.y && !TryFindFloor(land, release.y, out floorY)) return false;
@@ -829,7 +828,7 @@ internal sealed partial class VideoCameraItem
         Vector3 axis = Vector3.ProjectOnPlane(rotation * Vector3.right, Vector3.up);
         if (axis.sqrMagnitude < 0.0001f) axis = dir;
         float jitter = Constants.Camera.EjectSpinJitter;
-        float yaw = Mathf.Atan2(axis.x, axis.z) * Mathf.Rad2Deg
+        float yaw = (Mathf.Atan2(axis.x, axis.z) * Mathf.Rad2Deg)
                     + Constants.Camera.EjectSpin + UnityEngine.Random.Range(-jitter, jitter);
 
         return cassette.ServerStartArc(this, land, yaw, Constants.Camera.EjectUpSpeed);
@@ -1057,5 +1056,4 @@ internal sealed partial class VideoCameraItem
 
         RequestEjectCassette();
     }
-
 }

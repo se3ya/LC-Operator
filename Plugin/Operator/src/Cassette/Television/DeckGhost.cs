@@ -1,4 +1,3 @@
-using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -6,8 +5,6 @@ namespace Operator.Cassette;
 
 internal static class DeckGhost
 {
-    private static readonly AccessTools.FieldRef<ShipBuildModeManager, PlaceableShipObject>? PlacingRef = FindPlacingRef();
-
     private static PlaceableShipObject? _target;
     private static MeshRenderer? _ghost;
     private static MeshRenderer? _outline;
@@ -16,7 +13,7 @@ internal static class DeckGhost
 
     internal static void Sync(ShipBuildModeManager manager)
     {
-        PlaceableShipObject? placing = manager.InBuildMode && PlacingRef != null ? PlacingRef(manager) : null;
+        PlaceableShipObject? placing = manager.InBuildMode ? manager.placingObject : null;
         if (placing == null)
         {
             if (_shown) Hide();
@@ -82,18 +79,5 @@ internal static class DeckGhost
         _target = null;
         _shown = false;
         _attached = false;
-    }
-
-    private static AccessTools.FieldRef<ShipBuildModeManager, PlaceableShipObject>? FindPlacingRef()
-    {
-        try
-        {
-            var field = AccessTools.Field(typeof(ShipBuildModeManager), "placingObject");
-            return field != null ? AccessTools.FieldRefAccess<ShipBuildModeManager, PlaceableShipObject>(field) : null;
-        }
-        catch
-        {
-            return null;
-        }
     }
 }

@@ -212,7 +212,7 @@ internal sealed partial class VideoCameraItem
         _chainHeld.Clear();
     }
 
-    private void TickChainClose()
+    private void UpdateChainClose()
     {
         if (!IsServer) return;
 
@@ -318,7 +318,6 @@ internal sealed partial class VideoCameraItem
             Plugin.Log.LogDebug($"Nothing to merge in chain of {_chainSegments.Count} segments.");
             return false;
         }
-
 
         string mergedName = $"VideoCamera_merged_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{NetworkObjectId}.mp4";
         var payload = new StringBuilder();
@@ -459,7 +458,7 @@ internal sealed partial class VideoCameraItem
         {
             int idx = tok.IndexOf(':');
             if (idx <= 0) continue;
-            if (!ulong.TryParse(tok.Substring(0, idx), out ulong owner)) continue;
+            if (!ulong.TryParse(tok.AsSpan(0, idx), out ulong owner)) continue;
             string file = tok.Substring(idx + 1);
             if (string.IsNullOrEmpty(file)) continue;
             list.Add(new SegmentRef(owner, file));

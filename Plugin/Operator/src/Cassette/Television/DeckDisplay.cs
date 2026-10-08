@@ -117,36 +117,36 @@ internal sealed class DeckDisplay : IDisposable
             float half = gh / 2f;
             for (int y = Mathf.FloorToInt(gy); y <= Mathf.CeilToInt(gy + gh); y++)
             {
-                float span = 1f - Mathf.Abs(y - (gy + half)) / half;
-                if (span > 0f) Rect(14f, y, 14f + gh * 0.84f * span, y + 1f, Hot);
+                float span = 1f - (Mathf.Abs(y - (gy + half)) / half);
+                if (span > 0f) Rect(14f, y, 14f + (gh * 0.84f * span), y + 1f, Hot);
             }
         }
         else if (_mode == DeckMode.Pause)
         {
             float bw = gh * 0.28f;
             Rect(14f, gy, 14f + bw, gy + gh, Hot);
-            Rect(14f + gh * 0.54f, gy, 14f + gh * 0.54f + bw, gy + gh, Hot);
+            Rect(14f + (gh * 0.54f), gy, 14f + (gh * 0.54f) + bw, gy + gh, Hot);
         }
         else
         {
-            Rect(14f, gy, 14f + gh * 0.82f, gy + gh, Hot);
+            Rect(14f, gy, 14f + (gh * 0.82f), gy + gh, Hot);
         }
 
-        float x = 14f + gh * 0.84f + 22f;
+        float x = 14f + (gh * 0.84f) + 22f;
         if (_mode != DeckMode.Stop)
         {
             x = SegText($"{_speedTenths / 10}.{_speedTenths % 10}", x, gy, gh, Hot) + 6f;
             float size = gh * 0.30f;
-            float cx = x + size / 2f;
-            float cy = gy + gh * 0.70f;
+            float cx = x + (size / 2f);
+            float cy = gy + (gh * 0.70f);
             float stroke = Mathf.Max(3f, gh * 0.13f);
-            Line(cx - size / 2f, cy - size / 2f, cx + size / 2f, cy + size / 2f, stroke, Hot);
-            Line(cx - size / 2f, cy + size / 2f, cx + size / 2f, cy - size / 2f, stroke, Hot);
-            x = cx + size / 2f + 22f;
+            Line(cx - (size / 2f), cy - (size / 2f), cx + (size / 2f), cy + (size / 2f), stroke, Hot);
+            Line(cx - (size / 2f), cy + (size / 2f), cx + (size / 2f), cy - (size / 2f), stroke, Hot);
+            x = cx + (size / 2f) + 22f;
         }
 
         int shown = _mode == DeckMode.Stop ? 0 : _elapsed;
-        SegText($"{shown / 3600}:{shown / 60 % 60:00}:{shown % 60:00}", x, gy, gh, Hot);
+        SegText($"{shown / 3600}:{(shown / 60) % 60:00}:{shown % 60:00}", x, gy, gh, Hot);
 
         float th = gh * 0.52f;
         string total = $"{_total / 60}:{_total % 60:00}";
@@ -164,16 +164,16 @@ internal sealed class DeckDisplay : IDisposable
         string time = space < 0 ? _clock : _clock.Substring(0, space);
         string half = space < 0 ? string.Empty : _clock.Substring(space + 1);
         float sh = gh * 0.52f;
-        float width = SegWidth(time, gh) + (half.Length > 0 ? gh * 0.25f + SegWidth(half, sh) : 0f);
+        float width = SegWidth(time, gh) + (half.Length > 0 ? (gh * 0.25f) + SegWidth(half, sh) : 0f);
         float x = SegText(time, (_width - width) / 2f, gy, gh, Hot);
-        if (half.Length > 0) SegText(half, x - gh * 0.155f + gh * 0.25f, gy + gh - sh, sh, Hot);
+        if (half.Length > 0) SegText(half, x - (gh * 0.155f) + (gh * 0.25f), gy + gh - sh, sh, Hot);
     }
 
     private static float SegWidth(string text, float h)
     {
         float width = 0f;
-        foreach (char c in text) width += (c == ':' || c == '.' ? 2f * h * 0.072f : h * 0.56f) + h * 0.155f;
-        return width - h * 0.155f;
+        foreach (char c in text) width += (c == ':' || c == '.' ? 2f * h * 0.072f : h * 0.56f) + (h * 0.155f);
+        return width - (h * 0.155f);
     }
 
     private float SegText(string text, float x, float y, float h, Color32 color)
@@ -184,19 +184,19 @@ internal sealed class DeckDisplay : IDisposable
         {
             if (c == ':')
             {
-                Circle(x + r, y + h * 0.30f, r, color);
-                Circle(x + r, y + h * 0.72f, r, color);
-                x += 2f * r + gap;
+                Circle(x + r, y + (h * 0.30f), r, color);
+                Circle(x + r, y + (h * 0.72f), r, color);
+                x += (2f * r) + gap;
             }
             else if (c == '.')
             {
                 Circle(x + r, y + h - r, r, color);
-                x += 2f * r + gap;
+                x += (2f * r) + gap;
             }
             else
             {
                 Seven(c, x, y, h, color);
-                x += h * 0.56f + gap;
+                x += (h * 0.56f) + gap;
             }
         }
         return x;
@@ -214,12 +214,12 @@ internal sealed class DeckDisplay : IDisposable
             switch (s)
             {
                 case 'a': Rect(x + e, y, x + w - e, y + t, color); break;
-                case 'g': Rect(x + e, y + m - t / 2f, x + w - e, y + m + t / 2f, color); break;
+                case 'g': Rect(x + e, y + m - (t / 2f), x + w - e, y + m + (t / 2f), color); break;
                 case 'd': Rect(x + e, y + h - t, x + w - e, y + h, color); break;
-                case 'f': Rect(x, y + e, x + t, y + m - e * 0.4f, color); break;
-                case 'b': Rect(x + w - t, y + e, x + w, y + m - e * 0.4f, color); break;
-                case 'e': Rect(x, y + m + e * 0.4f, x + t, y + h - e, color); break;
-                case 'c': Rect(x + w - t, y + m + e * 0.4f, x + w, y + h - e, color); break;
+                case 'f': Rect(x, y + e, x + t, y + m - (e * 0.4f), color); break;
+                case 'b': Rect(x + w - t, y + e, x + w, y + m - (e * 0.4f), color); break;
+                case 'e': Rect(x, y + m + (e * 0.4f), x + t, y + h - e, color); break;
+                case 'c': Rect(x + w - t, y + m + (e * 0.4f), x + w, y + h - e, color); break;
             }
         }
     }
@@ -253,7 +253,7 @@ internal sealed class DeckDisplay : IDisposable
             {
                 float dx = x + 0.5f - cx;
                 float dy = y + 0.5f - cy;
-                if (dx * dx + dy * dy <= r * r) Plot(x, y, color);
+                if ((dx * dx) + (dy * dy) <= r * r) Plot(x, y, color);
             }
         }
     }
@@ -271,7 +271,7 @@ internal sealed class DeckDisplay : IDisposable
             {
                 var p = new Vector2(x + 0.5f, y + 0.5f);
                 float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / length);
-                if ((a + ab * t - p).sqrMagnitude <= half * half) Plot(x, y, color);
+                if ((a + (ab * t) - p).sqrMagnitude <= half * half) Plot(x, y, color);
             }
         }
     }
@@ -279,7 +279,7 @@ internal sealed class DeckDisplay : IDisposable
     private void Plot(int x, int y, Color32 color)
     {
         if (x < 0 || y < 0 || x >= _width || y >= _height) return;
-        _pixels[(_height - 1 - y) * _width + x] = color;
+        _pixels[((_height - 1 - y) * _width) + x] = color;
     }
 
     public void Dispose()

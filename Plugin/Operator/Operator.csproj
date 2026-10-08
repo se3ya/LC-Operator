@@ -33,7 +33,7 @@
     <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.25" />
     <PackageReference Include="TeamXiaolan.DawnLib.DuskMod" Version="0.8.3" Publicize="true" />
     <PackageReference Include="TeamXiaolan.DawnLib.SourceGen" Version="0.2.2" PrivateAssets="all" />
-    <PackageReference Include="Rune580.Mods.LethalCompany.InputUtils" Version="0.7.12" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="Rune580.Mods.LethalCompany.InputUtils" Version="0.7.13 " IncludeAssets="compile" PrivateAssets="all" />
     <PackageReference Include="AinaVT-LethalConfig" Version="1.4.6" Private="False" />
   </ItemGroup>
 

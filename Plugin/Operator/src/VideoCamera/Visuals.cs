@@ -229,8 +229,8 @@ internal sealed partial class VideoCameraItem
         _shellOpen = false;
         StowWebcam();
         _shellCloseCutTime = Time.unscaledTimeAsDouble
-                             + GetClipLength(_shellAnimation, Constants.Assets.ScreenShellCloseAnimationName)
-                             * Constants.Camera.ShellCloseCut;
+                             + (GetClipLength(_shellAnimation, Constants.Assets.ScreenShellCloseAnimationName)
+                             * Constants.Camera.ShellCloseCut);
         PlayShellAnimation(false);
         ApplyLensCover(false, animate: true);
     }
@@ -335,7 +335,7 @@ internal sealed partial class VideoCameraItem
         }
 
         float progress = Mathf.Clamp01((float)((now - _liftStart) / Constants.Camera.EjectLiftTime));
-        float lift = Constants.Camera.EjectLift * (1f - (1f - progress) * (1f - progress));
+        float lift = Constants.Camera.EjectLift * (1f - ((1f - progress) * (1f - progress)));
         Transform? parent = decor.parent;
         Vector3 offset = parent != null ? parent.InverseTransformVector(parent.up * lift) : Vector3.up * lift;
         decor.localPosition = _decorBase + offset;
@@ -524,7 +524,7 @@ internal sealed partial class VideoCameraItem
                 for (int p = 0; p < parts.Length; p++)
                 {
                     error += (parts[p].localPosition - poses[p]).sqrMagnitude
-                             + Quaternion.Angle(parts[p].localRotation, twists[p]) * Constants.Camera.ClipMatchAngleWeight;
+                             + (Quaternion.Angle(parts[p].localRotation, twists[p]) * Constants.Camera.ClipMatchAngleWeight);
                 }
                 if (error < bestError)
                 {

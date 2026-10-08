@@ -151,7 +151,7 @@ internal sealed class Recorder
 
     public void SetAudioHeld(bool held) => _voiceChain?.SetHeld(held);
 
-    public void TickMic() => _micSubscriber?.Tick();
+    public void UpdateMic() => _micSubscriber?.Update();
 
     private static AudioListener? GetAudioListener()
     {
@@ -600,7 +600,7 @@ internal sealed class Recorder
         long value = 0;
         while (i < line.Length && line[i] >= '0' && line[i] <= '9')
         {
-            value = value * 10 + (line[i] - '0');
+            value = (value * 10) + (line[i] - '0');
             i++;
         }
         return value;
@@ -625,7 +625,7 @@ internal sealed class Recorder
         {
             return 0.0;
         }
-        return h * 3600.0 + m * 60.0 + s;
+        return (h * 3600.0) + (m * 60.0) + s;
     }
 
     private const string MicLimiter = "alimiter=limit=0.98:level=disabled";
@@ -634,8 +634,8 @@ internal sealed class Recorder
     {
         amount = Mathf.Clamp01(amount);
         float headroom = Constants.Audio.MicEchoHeadroom;
-        float decay1 = (0.25f + 0.35f * amount) / 0.8f / headroom;
-        float decay2 = (0.15f + 0.30f * amount) / 0.8f / headroom;
+        float decay1 = (0.25f + (0.35f * amount)) / 0.8f / headroom;
+        float decay2 = (0.15f + (0.30f * amount)) / 0.8f / headroom;
         return string.Format(
             System.Globalization.CultureInfo.InvariantCulture,
             "aecho={0:0.0000}:1:60|100:{1:0.0000}|{2:0.0000},volume={3:0.##}",
@@ -950,7 +950,7 @@ internal sealed class Recorder
         string overrideDir = VideoCameraConfig.OutputDirectoryOverride.Value;
         if (!string.IsNullOrWhiteSpace(overrideDir))
         {
-            return Wine.IsRunning && overrideDir.StartsWith("/", StringComparison.Ordinal)
+            return Wine.IsRunning && overrideDir.StartsWith('/')
                 ? "Z:" + overrideDir.Replace('/', '\\')
                 : overrideDir;
         }

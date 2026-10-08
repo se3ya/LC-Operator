@@ -115,14 +115,14 @@ internal sealed class EnemyBountyTracker
         foreach (var kv in types)
         {
             CassetteBountyConfig.TryGetBounty(kv.Key, out int bounty);
-            float share = 1f + Constants.Bounty.FramingBonus * kv.Value.Frame;
+            float share = 1f + (Constants.Bounty.FramingBonus * kv.Value.Frame);
             if ((kv.Value.Flags & KillFlag) != 0) share += Constants.Bounty.KillBonus;
             if ((kv.Value.Flags & FirstFlag) != 0) share += Constants.Bounty.FirstFootageBonus;
             if ((kv.Value.Flags & SharedFlag) != 0) share += Constants.Bounty.SharedShotBonus;
             earned += bounty * kv.Value.Danger * share;
         }
 
-        float keep = 1f - Mathf.Clamp(VideoCameraConfig.DeadBodyPenalty.Value, 0, 100) / 100f;
+        float keep = 1f - (Mathf.Clamp(VideoCameraConfig.DeadBodyPenalty.Value, 0, 100) / 100f);
         earned *= Mathf.Pow(keep, bodies);
         return VideoCameraConfig.FlatBaseValue.Value + Mathf.Max(0, Mathf.RoundToInt(earned));
     }
@@ -285,7 +285,7 @@ internal sealed class EnemyBountyTracker
 
     private readonly List<EnemyRecord> _seen = new();
 
-    public void Tick(float dt)
+    public void Update(float dt)
     {
         if (_camera == null) return;
         if (CompanyMoon.IsFootageWorthless())

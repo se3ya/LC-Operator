@@ -122,7 +122,6 @@ internal static class ShipLeavePatch
                 Plugin.Log.LogError($"Failed to finish recording when ship left: {ex}");
             }
         }
-
     }
 }
 

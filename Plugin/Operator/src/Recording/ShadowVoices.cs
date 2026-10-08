@@ -317,7 +317,7 @@ internal sealed class ShadowVoicePool
 
         if (gainFlat <= 0f && gainLeft <= 0f && gainRight <= 0f)
         {
-            Step(voice, generation, sourceFrames, position + rate * frames);
+            Step(voice, generation, sourceFrames, position + (rate * frames));
             return;
         }
 
@@ -347,21 +347,21 @@ internal sealed class ShadowVoicePool
             {
                 int b0 = i0 * sourceChannels;
                 int b1 = i1 * sourceChannels;
-                left = samples[b0] + (samples[b1] - samples[b0]) * frac;
-                right = samples[b0 + 1] + (samples[b1 + 1] - samples[b0 + 1]) * frac;
+                left = samples[b0] + ((samples[b1] - samples[b0]) * frac);
+                right = samples[b0 + 1] + ((samples[b1 + 1] - samples[b0 + 1]) * frac);
                 summed = left + right;
             }
             else
             {
-                float mono = samples[i0] + (samples[i1] - samples[i0]) * frac;
+                float mono = samples[i0] + ((samples[i1] - samples[i0]) * frac);
                 left = mono;
                 right = mono;
                 summed = mono;
             }
 
             int outIndex = f * outChannels;
-            float outLeft = left * gainFlat + summed * gainLeft;
-            float outRight = right * gainFlat + summed * gainRight;
+            float outLeft = (left * gainFlat) + (summed * gainLeft);
+            float outRight = (right * gainFlat) + (summed * gainRight);
 
             if (muffled)
             {

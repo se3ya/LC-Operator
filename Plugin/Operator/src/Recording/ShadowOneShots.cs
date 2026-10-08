@@ -214,8 +214,8 @@ internal sealed class ShadowOneShotMirror
             Channels = pcm.Channels,
             FollowsObserver = followsObserver,
             Occluder = host.GetComponent<OccludeAudio>(),
-            OccludeCheckAt = Time.realtimeSinceStartup + Random.value * Constants.Audio.ShadowOccludeCheckInterval,
-            ExpiresAt = Time.realtimeSinceStartup + (clip.length - Mathf.Clamp(elapsed, 0f, clip.length)) / pitch + 1f
+            OccludeCheckAt = Time.realtimeSinceStartup + (Random.value * Constants.Audio.ShadowOccludeCheckInterval),
+            ExpiresAt = Time.realtimeSinceStartup + ((clip.length - Mathf.Clamp(elapsed, 0f, clip.length)) / pitch) + 1f
         };
 
         _live.Add(mirrored);

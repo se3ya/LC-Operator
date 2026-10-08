@@ -4,7 +4,6 @@ namespace Operator.Cassette;
 
 internal static partial class TerminalCassettePlayback
 {
-
     private static bool TryFindCassette(string id, out string fileName, out string? filePath, out string source)
     {
         fileName = string.Empty;
@@ -95,5 +94,4 @@ internal static partial class TerminalCassettePlayback
 
         return false;
     }
-
 }

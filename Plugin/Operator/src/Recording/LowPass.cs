@@ -40,17 +40,17 @@ internal struct LowPass
 
     internal float Left(float x)
     {
-        float y = _b0 * x + _leftOne;
-        _leftOne = _b1 * x - _a1 * y + _leftTwo;
-        _leftTwo = _b2 * x - _a2 * y;
+        float y = (_b0 * x) + _leftOne;
+        _leftOne = (_b1 * x) - (_a1 * y) + _leftTwo;
+        _leftTwo = (_b2 * x) - (_a2 * y);
         return y;
     }
 
     internal float Right(float x)
     {
-        float y = _b0 * x + _rightOne;
-        _rightOne = _b1 * x - _a1 * y + _rightTwo;
-        _rightTwo = _b2 * x - _a2 * y;
+        float y = (_b0 * x) + _rightOne;
+        _rightOne = (_b1 * x) - (_a1 * y) + _rightTwo;
+        _rightTwo = (_b2 * x) - (_a2 * y);
         return y;
     }
 }

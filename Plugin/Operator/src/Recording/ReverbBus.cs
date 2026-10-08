@@ -19,8 +19,8 @@ internal sealed class ReverbBus
         internal float Process(float input, float feedback, float damping)
         {
             float output = _line[_index];
-            _store = output * (1f - damping) + _store * damping;
-            _line[_index] = input + _store * feedback;
+            _store = (output * (1f - damping)) + (_store * damping);
+            _line[_index] = input + (_store * feedback);
             if (++_index >= _line.Length) _index = 0;
             return output;
         }
@@ -36,7 +36,7 @@ internal sealed class ReverbBus
         internal float Process(float input)
         {
             float buffered = _line[_index];
-            _line[_index] = input + buffered * 0.5f;
+            _line[_index] = input + (buffered * 0.5f);
             if (++_index >= _line.Length) _index = 0;
             return buffered - input;
         }

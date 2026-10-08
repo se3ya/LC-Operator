@@ -890,7 +890,7 @@ internal sealed class ClipBroadcaster : MonoBehaviour
             return;
         }
 
-        int size = FastBufferWriter.GetWriteSize(fileName) + sizeof(int) + missingIds.Length * sizeof(int);
+        int size = FastBufferWriter.GetWriteSize(fileName) + sizeof(int) + (missingIds.Length * sizeof(int));
         using var writer = new FastBufferWriter(size, Allocator.Temp);
         writer.WriteValueSafe(fileName);
         writer.WriteValueSafe(missingIds.Length);
@@ -920,7 +920,7 @@ internal sealed class ClipBroadcaster : MonoBehaviour
             return;
         }
 
-        int size = FastBufferWriter.GetWriteSize(fileName) + sizeof(int) + missingIds.Length * sizeof(int);
+        int size = FastBufferWriter.GetWriteSize(fileName) + sizeof(int) + (missingIds.Length * sizeof(int));
         using var writer = new FastBufferWriter(size, Allocator.Temp);
         writer.WriteValueSafe(fileName);
         writer.WriteValueSafe(missingIds.Length);

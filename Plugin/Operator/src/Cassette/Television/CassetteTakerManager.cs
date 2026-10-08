@@ -47,7 +47,7 @@ internal sealed class CassetteTakerManager : MonoBehaviour
 
     private void Update()
     {
-        TelevisionPlayback.Tick();
+        TelevisionPlayback.Update();
 
         if (Time.time < _nextPoll) return;
         _nextPoll = Time.time + Constants.Television.AttachPollInterval;

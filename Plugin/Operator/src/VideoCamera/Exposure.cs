@@ -33,9 +33,9 @@ internal sealed partial class VideoCameraItem
         // luminance has to be weighted in linear and probe reads an sRGB byte
         if (!_rawAmbientReady) return;
 
-        float measured = 0.2126f * SrgbToLinear(_rawAmbient.r)
-            + 0.7152f * SrgbToLinear(_rawAmbient.g)
-            + 0.0722f * SrgbToLinear(_rawAmbient.b);
+        float measured = (0.2126f * SrgbToLinear(_rawAmbient.r))
+            + (0.7152f * SrgbToLinear(_rawAmbient.g))
+            + (0.0722f * SrgbToLinear(_rawAmbient.b));
 
         float sceneEv = Mathf.Log(Mathf.Max(measured, Constants.Exposure.EvFloor), 2f);
 

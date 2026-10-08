@@ -30,5 +30,4 @@ internal static partial class TerminalCassettePlayback
     {
         return _lastTokens.Length >= 2 ? _lastTokens[1] : null;
     }
-
 }

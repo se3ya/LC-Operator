@@ -17,7 +17,7 @@ internal sealed partial class VideoCameraItem
     private RecordingBlock _blockTipShown;
     private bool _lastRecordingVisual;
 
-    private void TickFilmingVisuals()
+    private void UpdateFilmingVisuals()
     {
         bool filming = _recordingState.Value;
         if (filming == _lastRecordingVisual) return;

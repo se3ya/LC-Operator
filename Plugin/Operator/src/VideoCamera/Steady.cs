@@ -47,7 +47,7 @@ internal sealed partial class VideoCameraItem
         if (parentObject == holder)
         {
             transform.rotation = holder.rotation * Quaternion.Euler(itemProperties.rotationOffset);
-            transform.position = holder.position + holder.rotation * itemProperties.positionOffset;
+            transform.position = holder.position + (holder.rotation * itemProperties.positionOffset);
         }
     }
 
@@ -60,7 +60,7 @@ internal sealed partial class VideoCameraItem
 
     private static bool IsInspecting(PlayerControllerB player)
     {
-        return player.IsInspectingItem || player.rightArmProceduralRig != null && player.rightArmProceduralRig.weight > 0.01f;
+        return player.IsInspectingItem || (player.rightArmProceduralRig != null && player.rightArmProceduralRig.weight > 0.01f);
     }
 
     private static bool IsResting(PlayerControllerB player)
@@ -69,6 +69,6 @@ internal sealed partial class VideoCameraItem
         if (player.isWalking || controller == null || !controller.isGrounded) return false;
         Vector3 velocity = controller.velocity;
         float limit = Constants.Camera.HoldRestSpeed;
-        return velocity.x * velocity.x + velocity.z * velocity.z < limit * limit;
+        return (velocity.x * velocity.x) + (velocity.z * velocity.z) < limit * limit;
     }
 }

@@ -255,7 +255,7 @@ internal static partial class TerminalCassettePlayback
         Plugin.Log.LogDebug($"'{fileName}' hasnt finished transferring to this machine yet, waiting for it.");
     }
 
-    internal static void TickPendingReceive(Terminal terminal)
+    internal static void UpdatePendingReceive(Terminal terminal)
     {
         if (!IsWaitingForFile)
         {
@@ -475,7 +475,7 @@ internal static partial class TerminalCassettePlayback
         if (string.IsNullOrWhiteSpace(raw)) return false;
 
         string cleaned = raw.Trim();
-        if (cleaned.EndsWith("%", StringComparison.Ordinal))
+        if (cleaned.EndsWith('%'))
         {
             cleaned = cleaned.Substring(0, cleaned.Length - 1);
         }

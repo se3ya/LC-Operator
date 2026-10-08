@@ -69,7 +69,7 @@ internal sealed class FeedRenderer : MonoBehaviour
                     }
                     try
                     {
-                        capture.Tick();
+                        capture.CaptureFrame();
                     }
                     catch (Exception ex)
                     {

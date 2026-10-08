@@ -9,7 +9,7 @@ internal static class CassetteLimits
         float bounties = Mathf.Max(0, CassetteBountyConfig.SumBounties());
         float share = 1f + Constants.Bounty.FramingBonus + Constants.Bounty.KillBonus + Constants.Bounty.FirstFootageBonus + Constants.Bounty.SharedShotBonus;
 
-        float analytic = VideoCameraConfig.FlatBaseValue.Value + bounties * Constants.Bounty.MaxDanger * share;
+        float analytic = VideoCameraConfig.FlatBaseValue.Value + (bounties * Constants.Bounty.MaxDanger * share);
 
         int doubled = Mathf.CeilToInt(analytic * Constants.Bounty.ValueCeilingHeadroom);
         return Mathf.Clamp(doubled, 1, Constants.Bounty.MaxValue);
@@ -39,7 +39,7 @@ internal static class CassetteLimits
 
     internal static float ClampDuration(float duration, ulong sender)
     {
-        float max = Constants.ConfigRanges.MaxMinutesMax * 60f + 4f;
+        float max = (Constants.ConfigRanges.MaxMinutesMax * 60f) + 4f;
         if (float.IsNaN(duration) || float.IsInfinity(duration)) return 0f;
         float capped = Mathf.Clamp(duration, 0f, max);
         if (!Mathf.Approximately(capped, duration))

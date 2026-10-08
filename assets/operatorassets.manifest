@@ -1,15 +1,15 @@
 ManifestFileVersion: 0
-CRC: 2374767586
+CRC: 138980041
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 1c8e3f36c83488bcd898ab5bd6223e79
+    Hash: 65993e1defc0dfe44c883dbf0a40a000
   TypeTreeHash:
     serializedVersion: 2
     Hash: 458a7cf9061a76df06eebc8b832e2e21
   IncrementalBuildHash:
     serializedVersion: 2
-    Hash: 1c8e3f36c83488bcd898ab5bd6223e79
+    Hash: 65993e1defc0dfe44c883dbf0a40a000
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -135,6 +135,7 @@ Assets:
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u05.png
 - Assets/Content/Item/Camera/Camcorder/Item/VideoCameraItem.asset
 - Assets/Content/Item/Camera/Camcorder/Materials/BlackLight.mat
+- Assets/Content/Item/Camera/Textures/OsdFont.png
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c05.png
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r07.png
 - Assets/Content/Item/Camera/Shaders/VeilGlare.shader
@@ -185,6 +186,7 @@ Assets:
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u10.png
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_r08.png
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_u09.png
+- Assets/Content/Item/Camera/Textures/OcclusionVignette.png
 - Assets/Content/Item/Camera/Cassette/Item/CassetteIcon.png
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c06.png
 - Assets/Content/Item/Camera/Cassette/Icons/CassetteIcon_c03.png

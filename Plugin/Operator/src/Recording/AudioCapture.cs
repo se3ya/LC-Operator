@@ -125,7 +125,7 @@ internal sealed class AudioCapture : MonoBehaviour
 
         for (int f = 0, i = 0; f < frames; f++)
         {
-            float g = start + delta * f;
+            float g = start + (delta * f);
 
             if (ch >= 2)
             {
@@ -225,7 +225,7 @@ internal sealed class AudioCapture : MonoBehaviour
         double elapsed = _hissFrames / (double)_rate;
         _hissFrames += frames;
 
-        float remaining = (float)(1.0 - elapsed / _hissFadeTime);
+        float remaining = (float)(1.0 - (elapsed / _hissFadeTime));
         return remaining > 0f ? remaining : 0f;
     }
 
@@ -236,7 +236,7 @@ internal sealed class AudioCapture : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             s ^= s << 13; s ^= s >> 17; s ^= s << 5;
-            buffer[i] = ((s & 0xFFFF) / 32768f - 1f) * level;
+            buffer[i] = (((s & 0xFFFF) / 32768f) - 1f) * level;
         }
 
         _hissRng = s;
@@ -249,7 +249,7 @@ internal sealed class AudioCapture : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             s ^= s << 13; s ^= s >> 17; s ^= s << 5;
-            buffer[i] += ((s & 0xFFFF) / 32768f - 1f) * level;
+            buffer[i] += (((s & 0xFFFF) / 32768f) - 1f) * level;
         }
 
         _hissRng = s;

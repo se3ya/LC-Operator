@@ -64,7 +64,7 @@ internal static class CassetteShellColor
             shift = tier == CassetteTier.Common ? -Constants.Cassette.MisprintRowShift : Constants.Cassette.MisprintRowShift;
         }
 
-        var st = new Vector4(1f, (1f - 2f * inset) / rows, 0f, (rows - 1 - (int)tier + inset + shift) / rows);
+        var st = new Vector4(1f, (1f - (2f * inset)) / rows, 0f, (rows - 1 - (int)tier + inset + shift) / rows);
         target.GetPropertyBlock(Block);
         Block.SetColor(BaseColorId, color);
         Block.SetColor(ColorId, color);

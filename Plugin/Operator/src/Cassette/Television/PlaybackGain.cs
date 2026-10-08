@@ -20,7 +20,7 @@ internal sealed class PlaybackGain : MonoBehaviour
         {
             float peak = 0f;
             for (int c = 0; c < channels; c++) peak = Mathf.Max(peak, Mathf.Abs(data[i + c] * gain));
-            _envelope = peak > _envelope ? peak : _envelope * _release + peak * (1f - _release);
+            _envelope = peak > _envelope ? peak : (_envelope * _release) + (peak * (1f - _release));
             float scale = _envelope > ceiling ? gain * ceiling / _envelope : gain;
             for (int c = 0; c < channels; c++) data[i + c] *= scale;
         }

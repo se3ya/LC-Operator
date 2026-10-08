@@ -410,7 +410,7 @@ internal sealed partial class VideoCameraItem
         mat.SetFloat(WarpId, Constants.Cracks.Warp);
         mat.SetFloat(CaId, Constants.Cracks.ChromaticAberration);
         mat.SetFloat(DarkenId, Constants.Cracks.Darken);
-        mat.SetFloat(GlowId, Constants.Cracks.Glow * (1f + Constants.Cracks.WetGlintBoost * _rainWetness));
+        mat.SetFloat(GlowId, Constants.Cracks.Glow * (1f + (Constants.Cracks.WetGlintBoost * _rainWetness)));
         mat.SetFloat(SeedSparkId, LensSeed(_cameraMode.Value) * 3f);
         mat.SetFloat(SpecLoId, Constants.Cracks.SpecLo);
         mat.SetFloat(SpecHiId, Constants.Cracks.SpecHi);
@@ -441,7 +441,7 @@ internal sealed partial class VideoCameraItem
             _lamps.Clear(mat);
         }
 
-        float roomLum = 0.2126f * _rawAmbient.r + 0.7152f * _rawAmbient.g + 0.0722f * _rawAmbient.b;
+        float roomLum = (0.2126f * _rawAmbient.r) + (0.7152f * _rawAmbient.g) + (0.0722f * _rawAmbient.b);
         mat.SetFloat(RoomLumId, roomLum);
         mat.SetVector(RoomColorId, new Vector4(_rawAmbient.r, _rawAmbient.g, _rawAmbient.b, 1f));
 

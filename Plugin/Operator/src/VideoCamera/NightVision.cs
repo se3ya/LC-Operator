@@ -193,7 +193,6 @@ internal sealed partial class VideoCameraItem
             : Constants.NightVision.AgcReleaseTime;
         float k = 1f - Mathf.Exp(-dt / Mathf.Max(0.02f, tau));
         _nvAdaptedLuma = Mathf.Lerp(_nvAdaptedLuma, raw, k);
-
     }
 
     private int FindVolumeLayer()
@@ -402,7 +401,7 @@ internal sealed partial class VideoCameraItem
 
         float depth = Constants.NightVision.LowBatteryFlicker * (1f - t);
         float flick = Mathf.PerlinNoise(Time.time * 5.5f, 0.37f);
-        factor *= 1f - (1f - flick) * depth;
+        factor *= 1f - ((1f - flick) * depth);
         return Mathf.Clamp01(factor);
     }
 
@@ -437,11 +436,11 @@ internal sealed partial class VideoCameraItem
         float r = Constants.NightVision.NearShapeRadius;
         // slabs are already partway down their own curve at backset, measure against that
         float z = (d + Constants.NightVision.SlabBackset) / Constants.NightVision.SlabRange;
-        float window = Mathf.Max(0f, 1f - z * z * z * z);
+        float window = Mathf.Max(0f, 1f - (z * z * z * z));
         float faceOn = Constants.NightVision.SlabIntensity * Constants.NightVision.SlabFaceOnScale
                      * window * window;
         float lift = Mathf.Pow(2f, Constants.NightVision.NearLift) - 1f;
-        return lift * faceOn * (d * d + r * r);
+        return lift * faceOn * ((d * d) + (r * r));
     }
 
     private static void ConfigureNearLight(Light light)
@@ -504,8 +503,8 @@ internal sealed partial class VideoCameraItem
         Vector3 flat = new(forward.x, 0f, forward.z);
         if (flat.sqrMagnitude < 1e-6f) flat = Vector3.forward;
         flat = Quaternion.AngleAxis(yawDegrees, Vector3.up) * flat.normalized;
-        float h = Mathf.Sqrt(Mathf.Max(0f, 1f - downY * downY));
-        return (flat * h - Vector3.up * downY).normalized;
+        float h = Mathf.Sqrt(Mathf.Max(0f, 1f - (downY * downY)));
+        return ((flat * h) - (Vector3.up * downY)).normalized;
     }
 
     private void UpdateEmitterPose()
@@ -517,7 +516,7 @@ internal sealed partial class VideoCameraItem
         Vector3 origin = cam.position;
 
         float downY = Mathf.Clamp(
-            Constants.NightVision.SlabBaseDownY - forward.y * Constants.NightVision.SlabPitchFollow,
+            Constants.NightVision.SlabBaseDownY - (forward.y * Constants.NightVision.SlabPitchFollow),
             Constants.NightVision.SlabMinDownY,
             Constants.NightVision.SlabMaxDownY);
 
@@ -529,7 +528,7 @@ internal sealed partial class VideoCameraItem
             Vector3 dir = SlabDirection(forward, yaws[i], downY);
             // slab clips at its own origin plane so it starts behind lens
             slab.transform.SetPositionAndRotation(
-                origin - dir * Constants.NightVision.SlabBackset,
+                origin - (dir * Constants.NightVision.SlabBackset),
                 Quaternion.LookRotation(dir, Vector3.up));
         }
 
@@ -751,14 +750,14 @@ internal sealed partial class VideoCameraItem
         for (int i = 0; i < data.Length; i++)
         {
             Color32 c = data[i];
-            float l = (0.299f * c.r + 0.587f * c.g + 0.114f * c.b) / 255f;
+            float l = ((0.299f * c.r) + (0.587f * c.g) + (0.114f * c.b)) / 255f;
             sum += l;
             if (l > peak) peak = l;
         }
 
         float mean = sum / data.Length;
-        _nvRawSceneLuma = mean * Constants.NightVision.AgcMeanWeight
-                        + peak * (1f - Constants.NightVision.AgcMeanWeight);
+        _nvRawSceneLuma = (mean * Constants.NightVision.AgcMeanWeight)
+                        + (peak * (1f - Constants.NightVision.AgcMeanWeight));
     }
 
     private void ReleaseNightVision()

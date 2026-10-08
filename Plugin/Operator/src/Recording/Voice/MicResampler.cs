@@ -41,7 +41,7 @@ internal sealed class MicResampler
             {
                 break;
             }
-            dst[outN++] = s0 + (s1 - s0) * frac;
+            dst[outN++] = s0 + ((s1 - s0) * frac);
             _pos += step;
         }
 

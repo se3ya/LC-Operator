@@ -36,7 +36,7 @@ internal sealed class DissonanceMicSubscriber : IMicrophoneSubscriber
         _onSamples = onSamples;
         _shouldCapture = shouldCapture;
         _onOpen = onOpen;
-        Tick();
+        Update();
         _comms.SubscribeToRecordedAudio(this);
         Plugin.Log.LogDebug("Mic capture subscribed via Dissonance.");
         return true;
@@ -55,7 +55,7 @@ internal sealed class DissonanceMicSubscriber : IMicrophoneSubscriber
         _shouldCapture = null;
     }
 
-    internal void Tick()
+    internal void Update()
     {
         float volume = VideoCameraConfig.MicVolume.Value;
         DissonanceComms? comms = _comms;

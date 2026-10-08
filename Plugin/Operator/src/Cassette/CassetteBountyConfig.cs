@@ -121,7 +121,7 @@ internal static class CassetteBountyConfig
         }
         else
         {
-            rate = Constants.Bounty.DefaultRate * Mathf.Max(0.1f, 1f + Constants.Bounty.PowerLevelScale * (type.PowerLevel - 1f));
+            rate = Constants.Bounty.DefaultRate * Mathf.Max(0.1f, 1f + (Constants.Bounty.PowerLevelScale * (type.PowerLevel - 1f)));
         }
         return Mathf.RoundToInt(rate * Constants.Bounty.RateToCredits);
     }

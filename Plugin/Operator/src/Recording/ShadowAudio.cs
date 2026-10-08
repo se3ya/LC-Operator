@@ -59,7 +59,7 @@ internal sealed class ShadowAudio
     internal void SetContext(Vector3 cameraPosition, Vector3 cameraRight, Vector3 cameraUp, Vector3 cameraForward, Vector3 observerPosition)
         => _mirror.SetContext(cameraPosition, cameraRight, cameraUp, cameraForward, observerPosition);
 
-    internal void Tick(Transform camera, Vector3 observer, float weight, bool cameraInside, bool observerInside)
+    internal void Update(Transform camera, Vector3 observer, float weight, bool cameraInside, bool observerInside)
     {
         _cameraInside = cameraInside;
         _observerInside = observerInside;
@@ -390,7 +390,7 @@ internal sealed class ShadowAudio
             IsOperatorEnvironment = IsOperatorEnvironment(source),
             IsOwnSound = IsOwnCamera(source.transform),
             Occluder = source.GetComponent<OccludeAudio>(),
-            OccludeCheckAt = Time.realtimeSinceStartup + Random.value * Constants.Audio.ShadowOccludeCheckInterval,
+            OccludeCheckAt = Time.realtimeSinceStartup + (Random.value * Constants.Audio.ShadowOccludeCheckInterval),
             PeakVolume = source.volume,
             SyncFrame = frame
         });
@@ -607,7 +607,7 @@ internal sealed class ShadowAudio
             Vector3 unit = toSource / distance;
             float x = Vector3.Dot(unit, right);
             float z = Vector3.Dot(unit, forward);
-            float horizontal = Mathf.Sqrt(x * x + z * z);
+            float horizontal = Mathf.Sqrt((x * x) + (z * z));
             float azimuth = Mathf.Atan2(x, z);
             float half = spread * Mathf.Deg2Rad * 0.5f;
 
@@ -627,9 +627,9 @@ internal sealed class ShadowAudio
         rightGain = directional * panRight;
     }
 
-    private static float PanLeft(float pan) => (Mathf.Sqrt(2f - pan * pan) - pan) * 0.5f;
+    private static float PanLeft(float pan) => (Mathf.Sqrt(2f - (pan * pan)) - pan) * 0.5f;
 
-    private static float PanRight(float pan) => (Mathf.Sqrt(2f - pan * pan) + pan) * 0.5f;
+    private static float PanRight(float pan) => (Mathf.Sqrt(2f - (pan * pan)) + pan) * 0.5f;
 
     internal static float SpreadAt(AudioSource source, float distance)
     {
@@ -688,6 +688,6 @@ internal sealed class ShadowAudio
             return distance >= max ? 0f : Mathf.Clamp01(Mathf.InverseLerp(max, min, distance));
         }
 
-        return Mathf.Clamp01(min / (min + Constants.Audio.ShadowRolloffScale * (distance - min)));
+        return Mathf.Clamp01(min / (min + (Constants.Audio.ShadowRolloffScale * (distance - min))));
     }
 }

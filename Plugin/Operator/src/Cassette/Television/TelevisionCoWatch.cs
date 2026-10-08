@@ -140,7 +140,7 @@ internal static class TelevisionCoWatch
         bool loaded = TelevisionPlayback.HasLoaded;
         CassetteData data = TelevisionPlayback.LoadedData;
         TVScript? tv = CassetteTakerManager.ActiveTv;
-        int size = sizeof(bool) * 4 + sizeof(float) + sizeof(double) * 2 + (loaded ? DataSize(data) : 0);
+        int size = (sizeof(bool) * 4) + sizeof(float) + (sizeof(double) * 2) + (loaded ? DataSize(data) : 0);
         using var writer = new FastBufferWriter(size, Allocator.Temp);
         writer.WriteValueSafe(loaded);
         if (loaded) WriteData(writer, data);

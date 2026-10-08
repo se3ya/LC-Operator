@@ -9,56 +9,6 @@ internal sealed partial class VideoCameraItem
 {
     private const string OsdGlyphOrder = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ:./-+% ";
 
-    // 5x7 seven bytes glyph, low bit is right most column, same order as OsdGlyphOrder
-    // yep, its three hundred magic numbers, its a font
-    // add extra character and you add seven bytes in same place or whole thing shifts
-    private static readonly byte[] OsdFontRows =
-    {
-        0x0E,0x11,0x13,0x15,0x19,0x11,0x0E,
-        0x04,0x0C,0x04,0x04,0x04,0x04,0x0E,
-        0x0E,0x11,0x01,0x02,0x04,0x08,0x1F,
-        0x1F,0x02,0x04,0x02,0x01,0x11,0x0E,
-        0x02,0x06,0x0A,0x12,0x1F,0x02,0x02,
-        0x1F,0x10,0x1E,0x01,0x01,0x11,0x0E,
-        0x06,0x08,0x10,0x1E,0x11,0x11,0x0E,
-        0x1F,0x01,0x02,0x04,0x08,0x08,0x08,
-        0x0E,0x11,0x11,0x0E,0x11,0x11,0x0E,
-        0x0E,0x11,0x11,0x0F,0x01,0x02,0x0C,
-        0x0E,0x11,0x11,0x1F,0x11,0x11,0x11,
-        0x1E,0x11,0x11,0x1E,0x11,0x11,0x1E,
-        0x0E,0x11,0x10,0x10,0x10,0x11,0x0E,
-        0x1C,0x12,0x11,0x11,0x11,0x12,0x1C,
-        0x1F,0x10,0x10,0x1E,0x10,0x10,0x1F,
-        0x1F,0x10,0x10,0x1E,0x10,0x10,0x10,
-        0x0E,0x11,0x10,0x17,0x11,0x11,0x0F,
-        0x11,0x11,0x11,0x1F,0x11,0x11,0x11,
-        0x0E,0x04,0x04,0x04,0x04,0x04,0x0E,
-        0x07,0x02,0x02,0x02,0x02,0x12,0x0C,
-        0x11,0x12,0x14,0x18,0x14,0x12,0x11,
-        0x10,0x10,0x10,0x10,0x10,0x10,0x1F,
-        0x11,0x1B,0x15,0x15,0x11,0x11,0x11,
-        0x11,0x11,0x19,0x15,0x13,0x11,0x11,
-        0x0E,0x11,0x11,0x11,0x11,0x11,0x0E,
-        0x1E,0x11,0x11,0x1E,0x10,0x10,0x10,
-        0x0E,0x11,0x11,0x11,0x15,0x12,0x0D,
-        0x1E,0x11,0x11,0x1E,0x14,0x12,0x11,
-        0x0F,0x10,0x10,0x0E,0x01,0x01,0x1E,
-        0x1F,0x04,0x04,0x04,0x04,0x04,0x04,
-        0x11,0x11,0x11,0x11,0x11,0x11,0x0E,
-        0x11,0x11,0x11,0x11,0x11,0x0A,0x04,
-        0x11,0x11,0x11,0x15,0x15,0x15,0x0A,
-        0x11,0x11,0x0A,0x04,0x0A,0x11,0x11,
-        0x11,0x11,0x0A,0x04,0x04,0x04,0x04,
-        0x1F,0x01,0x02,0x04,0x08,0x10,0x1F,
-        0x00,0x0C,0x0C,0x00,0x0C,0x0C,0x00,
-        0x00,0x00,0x00,0x00,0x00,0x0C,0x0C,
-        0x01,0x02,0x02,0x04,0x08,0x08,0x10,
-        0x00,0x00,0x00,0x0E,0x00,0x00,0x00,
-        0x00,0x04,0x04,0x1F,0x04,0x04,0x00,
-        0x19,0x1A,0x02,0x04,0x08,0x0B,0x13,
-        0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-    };
-
     private static Texture2D? _osdAtlas;
     private static float _osdAtlasW;
 
@@ -72,47 +22,8 @@ internal sealed partial class VideoCameraItem
     private static void CreateOsdAtlas()
     {
         if (_osdAtlas != null) return;
-
-        int glyphCount = OsdGlyphOrder.Length;
-        int width = (glyphCount + 1) * 6;
-        int height = 8;
-        var tex = new Texture2D(width, height, TextureFormat.RGBA32, false)
-        {
-            name = "VC_OsdFont",
-            filterMode = FilterMode.Point,
-            wrapMode = TextureWrapMode.Clamp,
-        };
-
-        var px = new Color32[width * height];
-        var white = new Color32(255, 255, 255, 255);
-        for (int g = 0; g < glyphCount; g++)
-        {
-            for (int row = 0; row < 7; row++)
-            {
-                byte bits = OsdFontRows[g * 7 + row];
-                int y = 6 - row;
-                for (int col = 0; col < 5; col++)
-                {
-                    if ((bits & (0x10 >> col)) != 0)
-                    {
-                        px[y * width + g * 6 + col] = white;
-                    }
-                }
-            }
-        }
-        int solidX = glyphCount * 6;
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < 6; x++)
-            {
-                px[y * width + solidX + x] = white;
-            }
-        }
-
-        tex.SetPixels32(px);
-        tex.Apply(false, true);
-        _osdAtlas = tex;
-        _osdAtlasW = width;
+        _osdAtlas = AssetsLoader.LoadOptionalAsset<Texture2D>(Constants.Visual.OsdFontAsset);
+        _osdAtlasW = _osdAtlas != null ? _osdAtlas.width : 0f;
     }
 
     private static Color OsdTint(Color c)
@@ -142,16 +53,16 @@ internal sealed partial class VideoCameraItem
         Color tinted = OsdTint(color);
         for (int i = 0; i < text.Length; i++)
         {
-            OsdGlyph(text[i], x + i * 6f * s, y, s, tinted);
+            OsdGlyph(text[i], x + (i * 6f * s), y, s, tinted);
         }
     }
 
-    private static float OsdTextWidth(string text, float s) => text.Length > 0 ? (text.Length * 6f - 1f) * s : 0f;
+    private static float OsdTextWidth(string text, float s) => text.Length > 0 ? ((text.Length * 6f) - 1f) * s : 0f;
 
     private void OsdRect(float x, float y, float w, float h, Color color)
     {
         int glyphCount = OsdGlyphOrder.Length;
-        Rect src = new((glyphCount * 6f + 1.5f) / _osdAtlasW, 2f / 8f, 3f / _osdAtlasW, 4f / 8f);
+        Rect src = new(((glyphCount * 6f) + 1.5f) / _osdAtlasW, 2f / 8f, 3f / _osdAtlasW, 4f / 8f);
         Rect dst = new(x, y, w, h);
         if (Constants.Osd.FlipVertical)
         {
@@ -162,9 +73,9 @@ internal sealed partial class VideoCameraItem
 
     private void OsdDot(float x, float y, float d, Color color)
     {
-        OsdRect(x + d * 0.25f, y, d * 0.5f, d, color);
-        OsdRect(x, y + d * 0.25f, d, d * 0.5f, color);
-        OsdRect(x + d * 0.125f, y + d * 0.125f, d * 0.75f, d * 0.75f, color);
+        OsdRect(x + (d * 0.25f), y, d * 0.5f, d, color);
+        OsdRect(x, y + (d * 0.25f), d, d * 0.5f, color);
+        OsdRect(x + (d * 0.125f), y + (d * 0.125f), d * 0.75f, d * 0.75f, color);
     }
 
     private void OsdCornerBrackets(float w, float h, float inset, float len, float thick, Color color)
@@ -188,14 +99,14 @@ internal sealed partial class VideoCameraItem
         OsdRect(x, y + bh - t, bw, t, outline);
         OsdRect(x, y, t, bh, outline);
         OsdRect(x + bw - t, y, t, bh, outline);
-        OsdRect(x + bw, y + bh * 0.3f, 1.5f * s, bh * 0.4f, outline);
+        OsdRect(x + bw, y + (bh * 0.3f), 1.5f * s, bh * 0.4f, outline);
 
         Color fill = charge > 0.2f ? Constants.Osd.BatteryFill : Constants.Osd.Red;
-        float inner = bw - 4f * s;
+        float inner = bw - (4f * s);
         float fw = inner * Mathf.Clamp01(charge);
         if (fw > 0.5f)
         {
-            OsdRect(x + 2f * s, y + 2f * s, fw, bh - 4f * s, fill);
+            OsdRect(x + (2f * s), y + (2f * s), fw, bh - (4f * s), fill);
         }
     }
 
@@ -203,14 +114,14 @@ internal sealed partial class VideoCameraItem
     {
         if (peak <= 0.0001f) return 0f;
         float decibels = 20f * Mathf.Log10(peak);
-        return Mathf.Clamp01(1f + decibels / Constants.Osd.MeterFloor);
+        return Mathf.Clamp01(1f + (decibels / Constants.Osd.MeterFloor));
     }
 
     private void OsdMeter(string label, float level, float x, float y, float s)
     {
         OsdText(label, x, y, s, Constants.Osd.White);
-        float tx = x + OsdTextWidth(label, s) + 3f * s;
-        float ty = y + 1.5f * s;
+        float tx = x + OsdTextWidth(label, s) + (3f * s);
+        float ty = y + (1.5f * s);
         float th = 4f * s;
         int blocks = 11;
         float bw = 2f * s;
@@ -218,7 +129,7 @@ internal sealed partial class VideoCameraItem
         int lit = Mathf.RoundToInt(Mathf.Clamp01(level) * blocks);
         for (int i = 0; i < blocks; i++)
         {
-            OsdRect(tx + i * (bw + gap), ty, bw, th, i < lit ? Constants.Osd.MeterFill : Constants.Osd.TrackBack);
+            OsdRect(tx + (i * (bw + gap)), ty, bw, th, i < lit ? Constants.Osd.MeterFill : Constants.Osd.TrackBack);
         }
     }
 
@@ -231,8 +142,8 @@ internal sealed partial class VideoCameraItem
         OsdRect(x, y + ch - t, cw, t, color);
         OsdRect(x, y, t, ch, color);
         OsdRect(x + cw - t, y, t, ch, color);
-        OsdRect(x + 3f * s, y + 2.5f * s, 2f * s, 2f * s, color);
-        OsdRect(x + 7f * s, y + 2.5f * s, 2f * s, 2f * s, color);
+        OsdRect(x + (3f * s), y + (2.5f * s), 2f * s, 2f * s, color);
+        OsdRect(x + (7f * s), y + (2.5f * s), 2f * s, 2f * s, color);
     }
 
     private void OsdNightshot(float x, float y, float s)
@@ -249,7 +160,7 @@ internal sealed partial class VideoCameraItem
         if (recOrPaused)
         {
             int maxMin = VideoCameraConfig.MaxMinutes.Value;
-            int minsLeft = Mathf.Max(0, Mathf.CeilToInt((float)(maxMin * 60.0 - recSeconds) / 60f));
+            int minsLeft = Mathf.Max(0, Mathf.CeilToInt((float)((maxMin * 60.0) - recSeconds) / 60f));
             txt = $"{minsLeft}MIN";
             color = minsLeft <= Constants.Osd.TapeLowMinutes ? Constants.Osd.Red : Constants.Osd.White;
         }
@@ -270,7 +181,7 @@ internal sealed partial class VideoCameraItem
             }
         }
 
-        float iconW = icon ? 12f * s + 3f * s : 0f;
+        float iconW = icon ? (12f * s) + (3f * s) : 0f;
         float x = xRight - OsdTextWidth(txt, s) - iconW;
         if (icon) OsdCassette(x, y, s, color);
         OsdText(txt, x + iconW, y, s, color);
@@ -285,16 +196,16 @@ internal sealed partial class VideoCameraItem
         string mtxt = $"X{mult:0.0}";
 
         float barW = 40f * s;
-        float total = OsdTextWidth("W", s) + 4f * s + barW + 4f * s + OsdTextWidth("T", s) + 6f * s + OsdTextWidth(mtxt, s);
+        float total = OsdTextWidth("W", s) + (4f * s) + barW + (4f * s) + OsdTextWidth("T", s) + (6f * s) + OsdTextWidth(mtxt, s);
         float x = (w - total) * 0.5f;
 
         OsdText("W", x, y, s, Constants.Osd.White);
-        x += OsdTextWidth("W", s) + 4f * s;
-        OsdRect(x, y + 2.5f * s, barW, 2f * s, Constants.Osd.TrackBack);
-        OsdRect(x + z01 * (barW - 2f * s), y, 2f * s, 7f * s, Constants.Osd.White);
-        x += barW + 4f * s;
+        x += OsdTextWidth("W", s) + (4f * s);
+        OsdRect(x, y + (2.5f * s), barW, 2f * s, Constants.Osd.TrackBack);
+        OsdRect(x + (z01 * (barW - (2f * s))), y, 2f * s, 7f * s, Constants.Osd.White);
+        x += barW + (4f * s);
         OsdText("T", x, y, s, Constants.Osd.White);
-        x += OsdTextWidth("T", s) + 6f * s;
+        x += OsdTextWidth("T", s) + (6f * s);
         OsdText(mtxt, x, y, s, Constants.Osd.White);
     }
 
@@ -338,7 +249,7 @@ internal sealed partial class VideoCameraItem
         OsdRect(cx - half, cy + half - len, t, len, c);
         OsdRect(cx + half - len, cy + half - t, len, t, c);
         OsdRect(cx + half - t, cy + half - len, t, len, c);
-        if (!manual || sharp) OsdRect(cx - 1f * s, cy - 1f * s, 2f * s, 2f * s, c);
+        if (!manual || sharp) OsdRect(cx - (1f * s), cy - (1f * s), 2f * s, 2f * s, c);
     }
 
     private void OsdLowBattery(float w, float h, float s, float charge, bool blinkOn)
@@ -347,10 +258,10 @@ internal sealed partial class VideoCameraItem
         if (!blinkOn) return;
 
         float bs = 2f * s;
-        float iconW = 16f * bs + 1.5f * bs;
+        float iconW = (16f * bs) + (1.5f * bs);
         float x = (w - iconW) * 0.5f;
-        float textOffset = 8f * bs + 3f * s;
-        float blockH = textOffset + 7f * s;
+        float textOffset = (8f * bs) + (3f * s);
+        float blockH = textOffset + (7f * s);
         float y = (h - blockH) * 0.5f;
         OsdBattery(x, y, bs, charge, Constants.Osd.White);
         string txt = "LOW BATTERY";
@@ -363,7 +274,7 @@ internal sealed partial class VideoCameraItem
         int total = (int)seconds;
         int ff = (int)((seconds - total) * fps);
         int hh = total / 3600;
-        int mm = total / 60 % 60;
+        int mm = (total / 60) % 60;
         int ss = total % 60;
         return $"{hh:00}:{mm:00}:{ss:00}:{ff:00}";
     }
@@ -437,8 +348,8 @@ internal sealed partial class VideoCameraItem
                 float zoomY = style switch
                 {
                     CameraOverlayStyle.Vhs => 12f * s,
-                    CameraOverlayStyle.Classic => h - 34f * s,
-                    _ => h - 30f * s,
+                    CameraOverlayStyle.Classic => h - (34f * s),
+                    _ => h - (30f * s),
                 };
                 OsdZoomBar(w, s, zoomY);
             }
@@ -461,20 +372,20 @@ internal sealed partial class VideoCameraItem
         float m = 8f * s;
         OsdCornerBrackets(w, h, m, 12f * s, 1f * s, Constants.Osd.White);
 
-        float x = m + 4f * s;
-        float y = m + 4f * s;
+        float x = m + (4f * s);
+        float y = m + (4f * s);
         if (rec)
         {
-            if (blinkOn) OsdDot(x, y + 1f * s, 5f * s, Constants.Osd.Red);
-            OsdText("REC", x + 8f * s, y, s, Constants.Osd.White);
+            if (blinkOn) OsdDot(x, y + (1f * s), 5f * s, Constants.Osd.Red);
+            OsdText("REC", x + (8f * s), y, s, Constants.Osd.White);
         }
         else
         {
             OsdText(paused ? "PAUSE" : "STBY", x, y, s, paused ? Constants.Osd.Amber : Constants.Osd.Grey);
         }
-        OsdNightshot(x, y + 10f * s, s);
+        OsdNightshot(x, y + (10f * s), s);
 
-        OsdBattery(w - m - 22f * s, y, s * 0.8f, charge, Constants.Osd.White);
+        OsdBattery(w - m - (22f * s), y, s * 0.8f, charge, Constants.Osd.White);
     }
 
     private void DrawOsdClassic(float w, float h, float s, bool rec, bool paused, bool blinkOn, float charge, double recSeconds, int fps)
@@ -482,27 +393,27 @@ internal sealed partial class VideoCameraItem
         float m = 6f * s;
         OsdCornerBrackets(w, h, m, 18f * s, 2f * s, Constants.Osd.White);
 
-        float ix = m + 8f * s;
-        float iy = m + 8f * s;
+        float ix = m + (8f * s);
+        float iy = m + (8f * s);
         if (rec)
         {
             OsdText("REC", ix, iy, s, Constants.Osd.White);
-            if (blinkOn) OsdDot(ix + OsdTextWidth("REC", s) + 4f * s, iy + 1f * s, 5f * s, Constants.Osd.Red);
+            if (blinkOn) OsdDot(ix + OsdTextWidth("REC", s) + (4f * s), iy + (1f * s), 5f * s, Constants.Osd.Red);
         }
         else
         {
             OsdText(paused ? "PAUSE" : "STBY", ix, iy, s, paused ? Constants.Osd.Amber : Constants.Osd.White);
         }
-        OsdNightshot(ix, iy + 10f * s, s);
+        OsdNightshot(ix, iy + (10f * s), s);
 
-        OsdBattery(w - m - 28f * s, iy, s, charge, Constants.Osd.White);
-        OsdTapeInfo(w - m - 8f * s, iy + 12f * s, s, rec || paused, recSeconds, blinkOn);
+        OsdBattery(w - m - (28f * s), iy, s, charge, Constants.Osd.White);
+        OsdTapeInfo(w - m - (8f * s), iy + (12f * s), s, rec || paused, recSeconds, blinkOn);
 
-        float by = h - m - 8f * s - 7f * s;
+        float by = h - m - (8f * s) - (7f * s);
         OsdText("ISO 200", ix, by, s, Constants.Osd.White);
         string tc = OsdFormatTimecode(recSeconds, fps);
         OsdText(tc, (w - OsdTextWidth(tc, s)) * 0.5f, by, s, Constants.Osd.White);
-        OsdText("1/50", w - m - 8f * s - OsdTextWidth("1/50", s), by, s, Constants.Osd.White);
+        OsdText("1/50", w - m - (8f * s) - OsdTextWidth("1/50", s), by, s, Constants.Osd.White);
     }
 
     private void DrawOsdVhs(float w, float h, float s, bool rec, bool paused, bool blinkOn, double recSeconds, int fps)
@@ -512,13 +423,13 @@ internal sealed partial class VideoCameraItem
         if (rec)
         {
             OsdText("REC", m, m, s2, Constants.Osd.Red);
-            if (blinkOn) OsdDot(m + OsdTextWidth("REC", s2) + 6f * s, m + 2f * s, 8f * s, Constants.Osd.Red);
+            if (blinkOn) OsdDot(m + OsdTextWidth("REC", s2) + (6f * s), m + (2f * s), 8f * s, Constants.Osd.Red);
         }
         else
         {
             OsdText(paused ? "PAUSE" : "STBY", m, m, s2, Constants.Osd.White);
         }
-        OsdNightshot(m, m + 9f * s2, s);
+        OsdNightshot(m, m + (9f * s2), s);
 
         string day = OsdGameDay();
         if (!string.IsNullOrEmpty(day))
@@ -529,12 +440,12 @@ internal sealed partial class VideoCameraItem
         if (rec || paused)
         {
             string tc = OsdFormatTimecode(recSeconds, fps);
-            OsdText(tc, m, h - m - 7f * s, s, Constants.Osd.White);
+            OsdText(tc, m, h - m - (7f * s), s, Constants.Osd.White);
         }
 
         string date = OsdVhsDate();
         string clock = OsdGameClock();
-        float ly = h - m - 7f * s2;
+        float ly = h - m - (7f * s2);
         if (!string.IsNullOrEmpty(date))
         {
             OsdText(date, w - m - OsdTextWidth(date, s2), ly, s2, Constants.Osd.White);
@@ -559,14 +470,14 @@ internal sealed partial class VideoCameraItem
         };
         OsdText(fmt, (w - OsdTextWidth(fmt, s)) * 0.5f, m, s, Constants.Osd.White);
 
-        float battW = 16f * s + 1.5f * s;
+        float battW = (16f * s) + (1.5f * s);
         int remaining = BatteryMinutesRemaining();
         string mins = remaining < 0
             ? $"{Constants.Osd.BatteryMinutesUnknown}MIN"
             : $"{remaining}MIN";
         float px = w - m - OsdTextWidth(mins, s);
         OsdText(mins, px, m, s, Constants.Osd.White);
-        OsdBattery(px - battW - 3f * s, m, s, charge, Constants.Osd.White);
+        OsdBattery(px - battW - (3f * s), m, s, charge, Constants.Osd.White);
 
         string? afLabel = VideoCameraConfig.FocusMode.Value switch
         {
@@ -575,32 +486,32 @@ internal sealed partial class VideoCameraItem
             _ => null,
         };
         if (afLabel != null) OsdText(afLabel, m, h * 0.30f, s, Constants.Osd.White);
-        OsdNightshot(m, h * 0.30f + 10f * s, s);
+        OsdNightshot(m, (h * 0.30f) + (10f * s), s);
         OsdText("AWB", w - m - OsdTextWidth("AWB", s), h * 0.30f, s, Constants.Osd.White);
 
         float my = h * 0.44f;
         OsdMeter("CH1", _osdCh1, m, my, s);
-        OsdMeter("CH2", _osdCh2, m, my + 9f * s, s);
+        OsdMeter("CH2", _osdCh2, m, my + (9f * s), s);
         OsdTapeInfo(w - m, my, s, rec || paused, recSeconds, blinkOn);
 
         float ry = h * 0.62f;
         if (rec)
         {
-            if (blinkOn) OsdDot(m, ry + 1f * s, 5f * s, Constants.Osd.Red);
+            if (blinkOn) OsdDot(m, ry + (1f * s), 5f * s, Constants.Osd.Red);
             string line = "REC " + OsdFormatTimecode(recSeconds, fps);
-            OsdText(line, m + 8f * s, ry, s, Constants.Osd.Red);
+            OsdText(line, m + (8f * s), ry, s, Constants.Osd.Red);
         }
         else if (paused)
         {
-            OsdText("PAUSE " + OsdFormatTimecode(recSeconds, fps), m + 8f * s, ry, s, Constants.Osd.Amber);
+            OsdText("PAUSE " + OsdFormatTimecode(recSeconds, fps), m + (8f * s), ry, s, Constants.Osd.Amber);
         }
         else
         {
-            OsdText("STBY", m + 8f * s, ry, s, Constants.Osd.Grey);
+            OsdText("STBY", m + (8f * s), ry, s, Constants.Osd.Grey);
         }
 
         string bottom = "1/60  F2.2  +0.0  ISO AUTO";
-        OsdText(bottom, (w - OsdTextWidth(bottom, s)) * 0.5f, h - m - 7f * s, s, Constants.Osd.White);
+        OsdText(bottom, (w - OsdTextWidth(bottom, s)) * 0.5f, h - m - (7f * s), s, Constants.Osd.White);
     }
 
     private static string OsdGameClock()
@@ -630,5 +541,4 @@ internal sealed partial class VideoCameraItem
         DateTime d = new DateTime(1986, 1, 1).AddDays(days);
         return d.ToString("MMM", CultureInfo.InvariantCulture).ToUpperInvariant() + $".{d.Day:00} {d.Year}";
     }
-
 }

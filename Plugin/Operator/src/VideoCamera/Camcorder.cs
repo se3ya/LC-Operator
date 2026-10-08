@@ -42,7 +42,7 @@ internal sealed partial class VideoCameraItem
         return true;
     }
 
-    private void TickCamcorderFear()
+    private void UpdateFear()
     {
         float dt = Time.deltaTime;
         float response = Mathf.Max(0f, VideoCameraConfig.FearResponse.Value);
@@ -121,15 +121,15 @@ internal sealed partial class VideoCameraItem
             float wbAmount = VideoCameraConfig.GetEffect(VideoCameraConfig.WhiteBalanceDrift);
             if (wbAmount > 0f)
             {
-                Vector3 drift = new Vector3(1.045f - 0.045f * fear, 1f, 0.96f + 0.02f * fear);
-                wb = Vector3.one + (drift - Vector3.one) * wbAmount;
+                Vector3 drift = new Vector3(1.045f - (0.045f * fear), 1f, 0.96f + (0.02f * fear));
+                wb = Vector3.one + ((drift - Vector3.one) * wbAmount);
             }
 
             float pumpAmount = VideoCameraConfig.GetEffect(VideoCameraConfig.ExposurePump);
             if (pumpAmount > 0f && fear > 0.05f)
             {
-                float pump = 1f + fear * 0.14f * (Mathf.PerlinNoise(Time.time * 1.7f, _glitchSeed) - 0.5f) * 2f;
-                wb *= 1f + (pump - 1f) * pumpAmount;
+                float pump = 1f + (fear * 0.14f * (Mathf.PerlinNoise(Time.time * 1.7f, _glitchSeed) - 0.5f) * 2f);
+                wb *= 1f + ((pump - 1f) * pumpAmount);
             }
         }
 

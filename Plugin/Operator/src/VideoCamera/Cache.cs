@@ -291,7 +291,7 @@ internal sealed partial class VideoCameraItem
 
         float start = Constants.Visual.ScreenGlowOpenStart;
         float open = Mathf.Clamp01((ScreenOpenAmount - start) / (1f - start));
-        lumens *= open * open * (3f - 2f * open);
+        lumens *= open * open * (3f - (2f * open));
 
         _screenGlowLight.color = tint;
         if (_screenGlowHdLight != null)

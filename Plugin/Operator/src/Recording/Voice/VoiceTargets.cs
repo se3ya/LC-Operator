@@ -8,7 +8,6 @@ internal struct VoiceTargets
     private const float WalkieLowpass = 4000f;
     private const float WalkieLowpassQ = 3f;
 
-
     public float LowpassCutoff;
     public float LowpassQ;
     public bool HighpassOn;

@@ -132,7 +132,7 @@ internal static class MonitorScreenLight
         return tint;
     }
 
-    internal static void Tick()
+    internal static void Update()
     {
         if (!_bound || _screenRt == null) return;
 
@@ -174,7 +174,7 @@ internal static class MonitorScreenLight
 
         float flicker = (Mathf.PerlinNoise(_noiseSeed, Time.time * Constants.Monitor.LightFlickerSpeed) - 0.5f) * 2f;
         float intensity = _baseIntensity * factor
-                          * (1f + flicker * Constants.Monitor.LightFlickerAmount);
+                          * (1f + (flicker * Constants.Monitor.LightFlickerAmount));
 
         _screenHd.color = tint;
         _screenHd.intensity = intensity;
@@ -254,6 +254,6 @@ internal static class MonitorScreenLight
 
         Color mean = new(r / (255f * n), g / (255f * n), b / (255f * n), 1f);
         _ambientTarget = mean;
-        _lumaTarget = 0.2126f * mean.r + 0.7152f * mean.g + 0.0722f * mean.b;
+        _lumaTarget = (0.2126f * mean.r) + (0.7152f * mean.g) + (0.0722f * mean.b);
     }
 }

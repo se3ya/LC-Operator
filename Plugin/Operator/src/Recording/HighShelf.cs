@@ -21,12 +21,12 @@ internal struct HighShelf
         float alpha = Mathf.Sin(w) * 0.70710678f;
         float shaped = 2f * Mathf.Sqrt(a) * alpha;
 
-        float a0 = a + 1f - (a - 1f) * cos + shaped;
-        _b0 = a * (a + 1f + (a - 1f) * cos + shaped) / a0;
-        _b1 = -2f * a * (a - 1f + (a + 1f) * cos) / a0;
-        _b2 = a * (a + 1f + (a - 1f) * cos - shaped) / a0;
-        _a1 = 2f * (a - 1f - (a + 1f) * cos) / a0;
-        _a2 = (a + 1f - (a - 1f) * cos - shaped) / a0;
+        float a0 = a + 1f - ((a - 1f) * cos) + shaped;
+        _b0 = a * (a + 1f + ((a - 1f) * cos) + shaped) / a0;
+        _b1 = -2f * a * (a - 1f + ((a + 1f) * cos)) / a0;
+        _b2 = a * (a + 1f + ((a - 1f) * cos) - shaped) / a0;
+        _a1 = 2f * (a - 1f - ((a + 1f) * cos)) / a0;
+        _a2 = (a + 1f - ((a - 1f) * cos) - shaped) / a0;
     }
 
     internal void Reset()
@@ -37,9 +37,9 @@ internal struct HighShelf
 
     internal float Process(float x)
     {
-        float y = _b0 * x + _one;
-        _one = _b1 * x - _a1 * y + _two;
-        _two = _b2 * x - _a2 * y;
+        float y = (_b0 * x) + _one;
+        _one = (_b1 * x) - (_a1 * y) + _two;
+        _two = (_b2 * x) - (_a2 * y);
         return y;
     }
 }

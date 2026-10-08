@@ -3,12 +3,10 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
 namespace Operator;
 
 internal sealed partial class VideoCameraItem
 {
-
     private void SubscribeInput()
     {
         if (_inputSubscribed || Plugin.Inputs?.ToggleRecording == null)
@@ -276,5 +274,4 @@ internal sealed partial class VideoCameraItem
         try { _cameraMode.Value = back; }
         catch (Exception) { }
     }
-
 }

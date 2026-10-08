@@ -424,7 +424,7 @@ internal sealed partial class VideoCameraItem : GrabbableObject
         if (_occlusionBlurTempA != null) { _occlusionBlurTempA.Release(); Destroy(_occlusionBlurTempA); _occlusionBlurTempA = null; }
         if (_occlusionBlurTempB != null) { _occlusionBlurTempB.Release(); Destroy(_occlusionBlurTempB); _occlusionBlurTempB = null; }
         if (_occlusionBlackTexture != null) { Destroy(_occlusionBlackTexture); _occlusionBlackTexture = null; }
-        if (_occlusionVignetteTexture != null) { Destroy(_occlusionVignetteTexture); _occlusionVignetteTexture = null; }
+        _occlusionVignetteTexture = null;
         if (_occlusionOverlayMaterial != null) { Destroy(_occlusionOverlayMaterial); _occlusionOverlayMaterial = null; }
         if (_focusBlend != null) { Destroy(_focusBlend); _focusBlend = null; }
 
@@ -463,13 +463,13 @@ internal sealed partial class VideoCameraItem : GrabbableObject
 
         SyncInside();
         UpdateUnderwater();
-        TickChainClose();
+        UpdateChainClose();
         CheckWorthless();
         UpdateAudioDuckGain();
         UpdateCrackDetection();
         UpdateNightVisionTransition();
-        TickCamcorderFear();
-        TickFilmingVisuals();
+        UpdateFear();
+        UpdateFilmingVisuals();
         UpdateParts();
         UpdateNearBlur();
 
@@ -565,13 +565,11 @@ internal sealed partial class VideoCameraItem : GrabbableObject
 
         UpdateHandlingSfx(isEquipped);
         UpdateRecordingRunSfx();
-        TickSfx();
+        UpdateSfx();
 
         if (_recordingState.Value && _bountyTracker != null && _recorder != null && _recorder.IsActive)
         {
-            _bountyTracker.Tick(Time.deltaTime);
+            _bountyTracker.Update(Time.deltaTime);
         }
-
     }
-
 }

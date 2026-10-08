@@ -255,12 +255,12 @@ internal sealed partial class VideoCameraItem
             _camera.transform.forward,
             observerPos);
         _shadowAudio.OwnRoot = transform;
-        _shadowVoices.Tick(_camera.transform, IsInside);
+        _shadowVoices.Update(_camera.transform, IsInside);
         _recorder.SetAudioRoom(IsInside);
         _recorder.SetAudioSubmerged(IsUnderwater);
         _recorder.SetAudioHeld(IsHeldLocally());
-        _recorder.TickMic();
-        _shadowAudio.Tick(
+        _recorder.UpdateMic();
+        _shadowAudio.Update(
             _camera.transform,
             observerPos,
             weight,
@@ -313,7 +313,6 @@ internal sealed partial class VideoCameraItem
             StartDeadManSession(VideoCameraConfig.DeathBehavior.Value);
             return;
         }
-
     }
 
     private void FinalizeHandoffSession()
@@ -450,5 +449,4 @@ internal sealed partial class VideoCameraItem
 
         _ = recorder.StopAsync();
     }
-
 }

@@ -114,8 +114,8 @@ internal static class RemoteVoices
         {
             float delayed = line[index];
             float input = buffer[i];
-            line[index] = input + delayed * feedback;
-            buffer[i] = input * dry + delayed * wet;
+            line[index] = input + (delayed * feedback);
+            buffer[i] = (input * dry) + (delayed * wet);
             if (++index >= length) index = 0;
         }
 
@@ -219,7 +219,7 @@ internal static class RemoteVoices
             for (int f = 0; f < count; f++)
             {
                 float voice = turned ? stream.Shelf.Process(filtered[f]) : filtered[f];
-                destination[f] += voice * (flat + (left + right) * 0.5f);
+                destination[f] += voice * (flat + ((left + right) * 0.5f));
             }
         }
     }
