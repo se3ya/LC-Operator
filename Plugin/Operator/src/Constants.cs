@@ -85,7 +85,7 @@ internal static class Constants
     internal static class Network
     {
         // bump on any wire change, rpc changes drop silently, netvar changes misframe and bounty rows corrupt without either
-        public const int NetcodeVersion = 11;
+        public const int NetcodeVersion = 12;
         public const string NetcodeVersionField = "opnet:";
     }
 
@@ -877,9 +877,19 @@ internal static class Constants
 
         public const float StatusFontScale = 1.6f;
         public const float StatusFallbackFontSize = 28f;
-        public const int PlaybackAnswerOffset = 17;
         public const float PlaybackAudioMaxDistance = 18f;
-        public const double SiblingCheckInterval = 0.25; // raising image rebuilds canvas, never every frame
+        public const float ScreenWidth = 470.5f;
+        public const float ScreenHeight = 404.2f;
+        public static readonly Vector2 ScreenCenter = new(17.75f, 11.7f);
+        public const float TextSpace = 115f;
+        public const int HiddenLines = 3;
+        public const float TextMargin = 7f;
+        public const float OverlayDepth = -4f;
+        public const int OverlaySortingBoost = 10;
+        public const int OverlayMaxWidth = 1280;
+        public const int OverlayMaxHeight = 720;
+        public const int OverlayFallbackWidth = 640;
+        public const int OverlayFallbackHeight = 360;
         public const double PlaybackHitchThreshold = 100.0;
         public const double PlaybackHitchLogCooldown = 1.0;
 
@@ -1007,6 +1017,9 @@ internal static class Constants
         public const int LightProbeSize = 16;
         public const float LightSampleInterval = 0.08f;
         public static readonly Color BacklightColor = new(0.82f, 0.88f, 1f);
+        public const float CardWidthShare = 0.9f;
+        public const float CardHeightShare = 0.5f;
+        public static readonly Color CardTint = new(0.3f, 0.31f, 0.31f, 0.46f);
 
         public const float InsertSlideTime = 1.3f;
         public const float SlotOutsideOffset = 0.22f; // insert start and eject spawn
