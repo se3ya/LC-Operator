@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -20,12 +21,28 @@ internal static class TelevisionCoWatch
     private const string MsgEject = "Op_TV_Eject";
     private const string MsgReqEject = "Op_TV_ReqEject";
     private const string MsgState = "Op_TV_State";
+    private const string MsgPrepare = "Op_TV_Prepare";
+    private const string MsgReady = "Op_TV_Ready";
+    private const string MsgGaveUp = "Op_TV_GaveUp";
+    private const string MsgWaiting = "Op_TV_Waiting";
+    private const string MsgAbort = "Op_TV_Abort";
 
     private static readonly string[] AllMessages =
     {
         MsgInsert, MsgPlay, MsgStop, MsgPause, MsgSpeed, MsgEject,
         MsgReqInsert, MsgReqPlay, MsgReqStop, MsgReqPause, MsgReqSpeed, MsgReqEject, MsgState,
+        MsgPrepare, MsgReady, MsgGaveUp, MsgWaiting, MsgAbort,
     };
+
+    private static readonly PrepareRound _round = new();
+    private static readonly ClipWait _serverWait = new();
+    private static readonly ClipWait _localWait = new();
+    private static string _localFile = string.Empty;
+    private static bool _localJoin;
+    private static bool _localReadySent;
+    private static bool _localHasFile;
+    private static int _waitingCount;
+    private static double _nextFileCheck;
 
     private static bool _registered;
     private static bool _finishedHooked;
@@ -35,18 +52,22 @@ internal static class TelevisionCoWatch
     internal static bool IsPaused => TelevisionPlayback.IsPaused;
     internal static float CurrentSpeed => TelevisionPlayback.CurrentSpeed;
     internal static string LoadedFileName => TelevisionPlayback.LoadedFileName;
+    internal static bool IsPreparing => _round.IsActive || _localFile.Length > 0;
     internal static int SnapshotVersion { get; private set; }
 
     private static CustomMessagingManager? Cmm =>
-        NetworkManager.Singleton != null ? NetworkManager.Singleton.CustomMessagingManager : null;
+        NetworkManager.Singleton.CustomMessagingManager;
 
     private static bool IsServer =>
-        NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+        NetworkManager.Singleton.IsServer;
+
+    private static bool Watching =>
+        VideoCameraConfig.TelevisionCassetteWatching.Value && CassetteTakerManager.IsRunning;
 
     internal static void Register()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || nm.CustomMessagingManager == null || _registered) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager == null || _registered) return;
 
         CustomMessagingManager cmm = nm.CustomMessagingManager;
         cmm.RegisterNamedMessageHandler(MsgInsert, OnInsert);
@@ -56,6 +77,9 @@ internal static class TelevisionCoWatch
         cmm.RegisterNamedMessageHandler(MsgSpeed, OnSpeed);
         cmm.RegisterNamedMessageHandler(MsgEject, OnEject);
         if (!nm.IsServer) cmm.RegisterNamedMessageHandler(MsgState, OnState);
+        cmm.RegisterNamedMessageHandler(MsgPrepare, OnPrepare);
+        cmm.RegisterNamedMessageHandler(MsgWaiting, OnWaiting);
+        cmm.RegisterNamedMessageHandler(MsgAbort, OnAbort);
         if (nm.IsServer)
         {
             cmm.RegisterNamedMessageHandler(MsgReqInsert, OnRequestInsert);
@@ -64,6 +88,8 @@ internal static class TelevisionCoWatch
             cmm.RegisterNamedMessageHandler(MsgReqPause, OnRequestPause);
             cmm.RegisterNamedMessageHandler(MsgReqSpeed, OnRequestSpeed);
             cmm.RegisterNamedMessageHandler(MsgReqEject, OnRequestEject);
+            cmm.RegisterNamedMessageHandler(MsgReady, OnReady);
+            cmm.RegisterNamedMessageHandler(MsgGaveUp, OnGaveUp);
         }
 
         if (!_finishedHooked)
@@ -103,7 +129,13 @@ internal static class TelevisionCoWatch
         else SendDataToServer(MsgReqInsert, data);
     }
 
-    internal static void RequestPlay() => SendByte(MsgPlay, MsgReqPlay, 0, ApplyPlay);
+    internal static void RequestPlay()
+    {
+        if (Cmm == null) return;
+        if (IsServer) ServerBeginPrepare();
+        else SendByteToServer(MsgReqPlay, 0);
+    }
+
     internal static void RequestStop() => SendByte(MsgStop, MsgReqStop, 0, ApplyStop);
     internal static void RequestPause(bool paused) => SendByte(MsgPause, MsgReqPause, (byte)(paused ? 1 : 0), () => ApplyPause(paused));
 
@@ -123,11 +155,13 @@ internal static class TelevisionCoWatch
 
     internal static void StopForOrbit()
     {
+        ClearPrepare();
         if (HasLoaded) TelevisionPlayback.SetPlaying(false);
     }
 
     internal static void ForceLocalStop()
     {
+        ClearPrepare();
         TelevisionPlayback.ClearAll();
         SnapshotVersion++;
     }
@@ -159,12 +193,208 @@ internal static class TelevisionCoWatch
         if (IsPlayRequested) RequestStop();
     }
 
-    private static void ApplyInsert(CassetteData data) => TelevisionPlayback.SetLoaded(data);
-    private static void ApplyPlay() => TelevisionPlayback.SetPlaying(true);
-    private static void ApplyStop() => TelevisionPlayback.SetPlaying(false);
+    internal static void Update()
+    {
+        if (_localFile.Length > 0) UpdateLocalPrepare();
+        if (_round.IsActive && IsServer) UpdateServerPrepare();
+    }
+
+    private static void ServerBeginPrepare()
+    {
+        if (!HasLoaded || IsPlayRequested || _round.IsActive) return;
+
+        if (!Watching)
+        {
+            ApplyPlay();
+            SendByteToAll(MsgPlay, 0);
+            return;
+        }
+
+        string file = LoadedFileName;
+        var clients = new List<ulong>(LobbyPeers.Listeners) { NetworkManager.Singleton.LocalClientId };
+
+        _round.Begin(file, clients);
+        _serverWait.Start();
+        StartLocalPrepare(file, false);
+        Plugin.Log.LogDebug($"Waiting for everyone to have '{file}'.");
+        SendStringToListeners(MsgPrepare, file);
+    }
+
+    private static void UpdateLocalPrepare()
+    {
+        double now = Time.realtimeSinceStartupAsDouble;
+        if (now >= _nextFileCheck)
+        {
+            _nextFileCheck = now + Constants.Terminal.FileCheckInterval;
+            _localHasFile = TerminalCassettePlayback.LocalHasFile(_localFile);
+        }
+
+        if (_localJoin && _localHasFile)
+        {
+            ClearLocalPrepare();
+            return;
+        }
+
+        TelevisionPlayback.SetCard(PrepareText.For(_localHasFile, _waitingCount));
+        if (_localReadySent) return;
+
+        string fileName = _localFile;
+        if (_localHasFile)
+        {
+            _localReadySent = true;
+            if (IsServer) _round.MarkReady(NetworkManager.Singleton.LocalClientId, fileName);
+            else SendStringToServer(MsgReady, fileName);
+            return;
+        }
+
+        bool stalled = _localWait.IsStalled();
+        if (!stalled && !_localWait.IsNothingComing()) return;
+
+        if (stalled) Plugin.Log.LogWarning($"'{fileName}' stopped arriving, dropping out of shared playback.");
+        else Plugin.Log.LogInfo($"'{fileName}' is not coming to this machine, dropping out of shared playback.");
+
+        bool join = _localJoin;
+        ClearLocalPrepare();
+        if (join) return;
+
+        if (IsServer) _round.MarkGaveUp(NetworkManager.Singleton.LocalClientId, fileName);
+        else SendStringToServer(MsgGaveUp, fileName);
+    }
+
+    private static void UpdateServerPrepare()
+    {
+        NetworkManager nm = NetworkManager.Singleton;
+        if (_serverWait.IsStalled())
+        {
+            _round.GiveUpPending(nm.ConnectedClientsIds);
+            _serverWait.Clear();
+        }
+
+        int waiting = _round.CountWaiting(nm.ConnectedClientsIds);
+        if (waiting > 0)
+        {
+            if (_round.IsNewWaiting(waiting))
+            {
+                _waitingCount = waiting;
+                SendByteToListeners(MsgWaiting, (byte)Mathf.Min(waiting, byte.MaxValue));
+            }
+            return;
+        }
+
+        PrepareOutcome outcome = _round.Finish();
+        ClearPrepare();
+
+        string f = outcome.FileName;
+        int ready = outcome.Ready.Count;
+        int missed = outcome.GaveUp.Count;
+
+        if (ready == 0)
+        {
+            Plugin.Log.LogWarning($"Nobody has '{f}', so there is nothing to play.");
+            SendByteToListeners(MsgAbort, 0);
+            return;
+        }
+
+        if (missed > 0) Plugin.Log.LogWarning($"{missed} of {ready + missed} players never got '{f}'. Playing for rest.");
+        else Plugin.Log.LogDebug($"All peers have '{f}', starting synchronized playback.");
+
+        ApplyPlay();
+        SendByteToAll(MsgPlay, 0);
+    }
+
+    private static void StartLocalPrepare(string fileName, bool join)
+    {
+        _localFile = fileName;
+        _localJoin = join;
+        _localReadySent = false;
+        _localHasFile = false;
+        _waitingCount = 0;
+        _nextFileCheck = 0d;
+        _localWait.Start();
+    }
+
+    private static void ClearLocalPrepare()
+    {
+        _localFile = string.Empty;
+        _localJoin = false;
+        _localReadySent = false;
+        _localHasFile = false;
+        _waitingCount = 0;
+        _nextFileCheck = 0d;
+        _localWait.Clear();
+        TelevisionPlayback.SetCard(string.Empty);
+    }
+
+    private static void ClearPrepare()
+    {
+        _round.Clear();
+        _serverWait.Clear();
+        ClearLocalPrepare();
+    }
+
+    private static void OnPrepare(ulong sender, FastBufferReader reader)
+    {
+        if (IsServer) return;
+        reader.ReadValueSafe(out string fileName);
+        if (!Watching)
+        {
+            SendStringToServer(MsgReady, fileName);
+            return;
+        }
+        StartLocalPrepare(fileName, false);
+    }
+
+    private static void OnReady(ulong sender, FastBufferReader reader)
+    {
+        reader.ReadValueSafe(out string fileName);
+        _round.MarkReady(sender, fileName);
+    }
+
+    private static void OnGaveUp(ulong sender, FastBufferReader reader)
+    {
+        reader.ReadValueSafe(out string fileName);
+        _round.MarkGaveUp(sender, fileName);
+    }
+
+    private static void OnWaiting(ulong sender, FastBufferReader reader)
+    {
+        if (IsServer) return;
+        reader.ReadValueSafe(out byte waiting);
+        _waitingCount = waiting;
+    }
+
+    private static void OnAbort(ulong sender, FastBufferReader reader)
+    {
+        if (IsServer) return;
+        ClearLocalPrepare();
+    }
+
+    private static void ApplyInsert(CassetteData data)
+    {
+        ClearPrepare();
+        TelevisionPlayback.SetLoaded(data);
+    }
+
+    private static void ApplyPlay()
+    {
+        ClearLocalPrepare();
+        TelevisionPlayback.SetPlaying(true);
+    }
+
+    private static void ApplyStop()
+    {
+        ClearPrepare();
+        TelevisionPlayback.SetPlaying(false);
+    }
+
     private static void ApplyPause(bool paused) => TelevisionPlayback.SetPaused(paused);
     private static void ApplySpeed(float speed) => TelevisionPlayback.SetSpeed(speed);
-    private static void ApplyEject() => TelevisionPlayback.SetLoaded(CassetteData.Empty);
+
+    private static void ApplyEject()
+    {
+        ClearPrepare();
+        TelevisionPlayback.SetLoaded(CassetteData.Empty);
+    }
 
     private static void ServerEject()
     {
@@ -248,7 +478,7 @@ internal static class TelevisionCoWatch
         ApplyInsert(d);
         SendDataToAll(MsgInsert, d);
     }
-    private static void OnRequestPlay(ulong sender, FastBufferReader reader) { ApplyPlay(); SendByteToAll(MsgPlay, 0); }
+    private static void OnRequestPlay(ulong sender, FastBufferReader reader) { ServerBeginPrepare(); }
     private static void OnRequestStop(ulong sender, FastBufferReader reader) { ApplyStop(); SendByteToAll(MsgStop, 0); }
     private static void OnRequestPause(ulong sender, FastBufferReader reader) { reader.ReadValueSafe(out byte v); ApplyPause(v != 0); SendByteToAll(MsgPause, v); }
     private static void OnRequestSpeed(ulong sender, FastBufferReader reader) { reader.ReadValueSafe(out float v); if (float.IsNaN(v) || float.IsInfinity(v)) return; ApplySpeed(v); SendFloatToAll(MsgSpeed, v); }
@@ -288,6 +518,10 @@ internal static class TelevisionCoWatch
         double elapsed = running ? Math.Max(0.0, NetworkManager.Singleton.ServerTime.Time - stamp) * speed : 0.0;
         TelevisionPlayback.SetClock(position + elapsed);
         SnapshotVersion++;
+        if (loaded && playing && Watching && !TerminalCassettePlayback.LocalHasFile(data.FileName))
+        {
+            StartLocalPrepare(data.FileName, true);
+        }
     }
 
     private static void SendByte(string broadcastMsg, string reqMsg, byte value, Action applyOnServer)
@@ -377,5 +611,51 @@ internal static class TelevisionCoWatch
         using var writer = new FastBufferWriter(sizeof(float), Allocator.Temp);
         writer.WriteValueSafe(value);
         cmm.SendNamedMessage(msg, NetworkManager.ServerClientId, writer);
+    }
+
+    private static bool IsConnected(ulong clientId)
+    {
+        foreach (ulong id in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            if (id == clientId) return true;
+        }
+        return false;
+    }
+
+    private static void SendStringToServer(string msg, string value)
+    {
+        CustomMessagingManager? cmm = Cmm;
+        if (cmm == null) return;
+        using var writer = new FastBufferWriter(FastBufferWriter.GetWriteSize(value), Allocator.Temp);
+        writer.WriteValueSafe(value);
+        cmm.SendNamedMessage(msg, NetworkManager.ServerClientId, writer);
+    }
+
+    private static void SendStringToListeners(string msg, string value)
+    {
+        CustomMessagingManager? cmm = Cmm;
+        if (cmm == null) return;
+        ulong local = NetworkManager.Singleton.LocalClientId;
+        foreach (ulong id in LobbyPeers.Listeners)
+        {
+            if (id == local || !IsConnected(id)) continue;
+            using var writer = new FastBufferWriter(FastBufferWriter.GetWriteSize(value), Allocator.Temp);
+            writer.WriteValueSafe(value);
+            cmm.SendNamedMessage(msg, id, writer);
+        }
+    }
+
+    private static void SendByteToListeners(string msg, byte value)
+    {
+        CustomMessagingManager? cmm = Cmm;
+        if (cmm == null) return;
+        ulong local = NetworkManager.Singleton.LocalClientId;
+        foreach (ulong id in LobbyPeers.Listeners)
+        {
+            if (id == local || !IsConnected(id)) continue;
+            using var writer = new FastBufferWriter(sizeof(byte), Allocator.Temp);
+            writer.WriteValueSafe(value);
+            cmm.SendNamedMessage(msg, id, writer);
+        }
     }
 }
