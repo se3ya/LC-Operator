@@ -70,6 +70,12 @@ internal static class TelevisionPlayback
     private static float _noiseSeed = -1f;
     private static bool _missingFileLogged;
     private static float _nextTakeoverAttempt;
+    private static string _cardText = string.Empty;
+    private static string _cardDrawn = string.Empty;
+    private static Texture2D? _cardAtlas;
+    private static bool _videoStarted;
+    private static bool _fileFound;
+    private static float _nextFileProbe;
 
     internal static bool HasLoaded => !string.IsNullOrEmpty(_loadedFile);
     internal static string LoadedFileName => _loadedFile;
@@ -90,7 +96,7 @@ internal static class TelevisionPlayback
     }
 
     private static double Now =>
-        NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening
+        NetworkManager.Singleton.IsListening
             ? NetworkManager.Singleton.ServerTime.Time
             : Time.realtimeSinceStartupAsDouble;
 
@@ -121,6 +127,7 @@ internal static class TelevisionPlayback
         _preparedFile = string.Empty;
         _missingFileLogged = false;
         _nextTakeoverAttempt = 0f;
+        _nextFileProbe = 0f;
         if (_takingOver) EndTakeover();
     }
 
@@ -131,6 +138,7 @@ internal static class TelevisionPlayback
         _paused = false;
         Retime(play ? position : 0.0);
         _nextTakeoverAttempt = 0f;
+        _nextFileProbe = 0f;
     }
 
     internal static void SetPaused(bool paused)
@@ -138,7 +146,7 @@ internal static class TelevisionPlayback
         double position = Position;
         _paused = paused;
         Retime(position);
-        if (_takingOver && _player != null)
+        if (_videoStarted && _player != null)
         {
             try { if (paused) _player.Pause(); else _player.Play(); } catch { }
         }
@@ -174,6 +182,7 @@ internal static class TelevisionPlayback
         _speed = 1f;
         _clockBase = 0.0;
         _clockRunning = false;
+        _cardText = string.Empty;
         _preparedFile = string.Empty;
         DestroyHost();
     }
@@ -188,7 +197,11 @@ internal static class TelevisionPlayback
             _endRaised = true;
             LocalPlaybackFinished?.Invoke();
         }
-        bool want = tv != null && tv.tvOn && _playRequested && HasLoaded;
+
+        bool tvOn = tv != null && tv.tvOn;
+        bool wantVideo = tvOn && _playRequested && HasLoaded && (_videoStarted || HasLocalFile());
+        bool wantCard = tvOn && _cardText.Length > 0;
+        bool want = wantVideo || wantCard;
 
         if (want && !_takingOver && Time.time >= _nextTakeoverAttempt)
         {
@@ -199,24 +212,38 @@ internal static class TelevisionPlayback
             EndTakeover();
         }
 
-        if (_takingOver) UpdateLight();
+        if (!_takingOver) return;
+
+        if (wantVideo)
+        {
+            if (!_videoStarted) StartVideo();
+        }
+        else
+        {
+            if (_videoStarted) StopVideo();
+            DrawCard();
+        }
+
+        UpdateLight();
+    }
+
+    private static bool HasLocalFile()
+    {
+        if (Time.time < _nextFileProbe) return _fileFound;
+
+        _nextFileProbe = Time.time + 1f;
+        _fileFound = !string.IsNullOrEmpty(TerminalCassettePlayback.FindLocalPath(_loadedFile));
+        if (!_fileFound && !_missingFileLogged)
+        {
+            _missingFileLogged = true;
+            Plugin.Log.LogWarning($"'{_loadedFile}' not on disk locally, recording cant be shown.");
+        }
+        return _fileFound;
     }
 
     private static void BeginTakeover(TVScript tv)
     {
         if (tv.tvMesh == null || tv.video == null) return;
-
-        string? filePath = TerminalCassettePlayback.FindLocalPath(_loadedFile);
-        if (string.IsNullOrEmpty(filePath))
-        {
-            _nextTakeoverAttempt = Time.time + 1f;
-            if (!_missingFileLogged)
-            {
-                _missingFileLogged = true;
-                Plugin.Log.LogWarning($"'{_loadedFile}' not on disk locally, recording cant be shown.");
-            }
-            return;
-        }
 
         _tv = tv;
         _screenRt = tv.video.targetTexture;
@@ -229,15 +256,23 @@ internal static class TelevisionPlayback
         if (_screenRt != null) ClearBlack(_screenRt);
 
         _takingOver = true;
+        _cardDrawn = string.Empty;
 
         SetupHost();
         if (_player == null || _screenRt == null)
         {
             _nextTakeoverAttempt = Time.time + 1f;
             EndTakeover();
-            return;
         }
+    }
 
+    private static void StartVideo()
+    {
+        _cardDrawn = string.Empty;
+        string? filePath = TerminalCassettePlayback.FindLocalPath(_loadedFile);
+        if (string.IsNullOrEmpty(filePath) || _player == null || _screenRt == null) return;
+
+        _videoStarted = true;
         _player.targetTexture = _screenRt;
 
         if (_preparedFile != _loadedFile)
@@ -258,6 +293,84 @@ internal static class TelevisionPlayback
             try { _player.time = Position; } catch { }
             _player.Play();
         }
+    }
+
+    private static void StopVideo()
+    {
+        _cardDrawn = string.Empty;
+        _videoStarted = false;
+        _preparedFile = string.Empty;
+        _pendingSeekOnPrepare = false;
+        if (_player == null) return;
+
+        try { _player.Stop(); } catch { }
+        _player.targetTexture = null;
+    }
+
+    internal static void SetCard(string text)
+    {
+        if (text == _cardText) return;
+
+        _cardText = text;
+        if (text.Length == 0)
+        {
+            _nextTakeoverAttempt = 0f;
+            _nextFileProbe = 0f;
+        }
+    }
+
+    private static Texture2D? GetCardAtlas()
+    {
+        if (_cardAtlas == null) _cardAtlas = AssetsLoader.LoadOptionalAsset<Texture2D>(Constants.Visual.OsdFontAsset);
+        return _cardAtlas;
+    }
+
+    private static void DrawCard()
+    {
+        if (_screenRt == null || _cardText.Length == 0 || _cardText == _cardDrawn) return;
+
+        Texture2D? atlas = GetCardAtlas();
+        if (atlas == null) return;
+
+        _cardDrawn = _cardText;
+        string[] lines = _cardText.Split('\n');
+        float width = _screenRt.width;
+        float height = _screenRt.height;
+        int scale = CardLayout.FitScale(lines, _screenRt.width, _screenRt.height, Constants.Television.CardWidthShare, Constants.Television.CardHeightShare);
+
+        RenderTexture? previous = RenderTexture.active;
+        RenderTexture.active = _screenRt;
+        GL.PushMatrix();
+        GL.LoadPixelMatrix(0f, width, height, 0f);
+        try
+        {
+            GL.Clear(true, true, Color.black);
+            for (int row = 0; row < lines.Length; row++)
+            {
+                (float x, float y) = CardLayout.LineOrigin(lines[row], row, lines.Length, scale, width, height);
+                for (int i = 0; i < lines[row].Length; i++)
+                {
+                    DrawGlyph(atlas, lines[row][i], x + (i * CardLayout.GlyphPitch * scale), y, scale);
+                }
+            }
+        }
+        finally
+        {
+            GL.PopMatrix();
+            RenderTexture.active = previous;
+        }
+    }
+
+    private static void DrawGlyph(Texture2D atlas, char c, float x, float y, float scale)
+    {
+        string order = VideoCameraItem.OsdGlyphOrder;
+        int index = order.IndexOf(char.ToUpperInvariant(c));
+        if (index < 0) index = order.Length - 1;
+
+        float atlasWidth = atlas.width;
+        var source = new Rect(index * CardLayout.GlyphPitch / atlasWidth, 0f, 5f / atlasWidth, 7f / 8f);
+        var target = new Rect(x, y, 5f * scale, 7f * scale);
+        Graphics.DrawTexture(target, atlas, source, 0, 0, 0, 0, Constants.Television.CardTint);
     }
 
     private static void EndTakeover()
@@ -304,6 +417,8 @@ internal static class TelevisionPlayback
         }
 
         _takingOver = false;
+        _videoStarted = false;
+        _cardDrawn = string.Empty;
         _tv = null;
         _screenRt = null;
         _origScreenMat = null;
@@ -333,7 +448,7 @@ internal static class TelevisionPlayback
         try
         {
             vp.time = Position;
-            if (_takingOver)
+            if (_videoStarted)
             {
                 vp.Play();
                 ApplyTransport();
@@ -521,7 +636,7 @@ internal static class TelevisionPlayback
         return o;
     }
 
-    private static void ClearBlack(RenderTexture rt)
+    internal static void ClearBlack(RenderTexture rt)
     {
         RenderTexture prev = RenderTexture.active;
         RenderTexture.active = rt;
