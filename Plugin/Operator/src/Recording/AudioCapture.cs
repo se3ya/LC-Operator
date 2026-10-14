@@ -24,10 +24,7 @@ internal sealed class AudioCapture : MonoBehaviour
     private float _shadowWeight;
     private float _listenerVolume = 1f;
     private volatile bool _submerged;
-    private float _submergeCutoff = 20000f;
-    private LowPass _submergeOne;
-    private LowPass _submergeTwo;
-    private float _submergeAt;
+    private readonly UnderwaterFilter _underwater = new();
     private float _hissFadeTime;
     private long _hissFrames;
     private int _rate = 48000;
@@ -45,7 +42,7 @@ internal sealed class AudioCapture : MonoBehaviour
         _shadowWeight = shadowWeight;
         _listenerVolume = AudioListener.volume;
         _submerged = submerged;
-        _submergeCutoff = submerged ? Constants.Audio.UnderwaterCutoff : 20000f;
+        _underwater.Reset(submerged);
         _shouldCapture = shouldCapture;
         _finalePhase = finalePhase;
         _forceHiss = forceHiss;
@@ -155,51 +152,9 @@ internal sealed class AudioCapture : MonoBehaviour
         _reverb?.Process(_fx, frames, ch);
         if (hissGain > 0f) AddHiss(_fx, frames * ch, hissGain);
         _mic?.Process(_fx, frames * ch, ch);
-        ApplySubmersion(_fx, frames, ch);
+        _underwater.Apply(_fx, frames, ch, _rate, _submerged);
         UpdatePeak(_fx, frames * ch);
         _pipe.EnqueueCopy(_fx, 0, frames * ch);
-    }
-
-    private void ApplySubmersion(float[] buffer, int frames, int channels)
-    {
-        float target = _submerged ? Constants.Audio.UnderwaterCutoff : 20000f;
-        float step = (float)frames / _rate * Constants.Audio.UnderwaterGlideRate;
-        _submergeCutoff = Mathf.Lerp(_submergeCutoff, target, Mathf.Clamp01(step));
-
-        if (_submergeCutoff >= 19000f)
-        {
-            if (_submergeAt != 0f)
-            {
-                _submergeOne.Reset();
-                _submergeTwo.Reset();
-                _submergeAt = 0f;
-            }
-
-            return;
-        }
-
-        if (_submergeAt != _submergeCutoff)
-        {
-            _submergeOne.Set(_submergeCutoff, _rate, 0.54119610f);
-            _submergeTwo.Set(_submergeCutoff, _rate, 1.30656296f);
-            _submergeAt = _submergeCutoff;
-        }
-
-        if (channels >= 2)
-        {
-            for (int f = 0, i = 0; f < frames; f++, i += channels)
-            {
-                buffer[i] = _submergeTwo.Left(_submergeOne.Left(buffer[i]));
-                buffer[i + 1] = _submergeTwo.Right(_submergeOne.Right(buffer[i + 1]));
-            }
-
-            return;
-        }
-
-        for (int f = 0; f < frames; f++)
-        {
-            buffer[f] = _submergeTwo.Left(_submergeOne.Left(buffer[f]));
-        }
     }
 
     private void WriteFinale(int samples, int channels, float shadowScale, bool hiss)

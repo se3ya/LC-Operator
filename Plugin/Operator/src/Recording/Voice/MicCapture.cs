@@ -15,10 +15,7 @@ internal sealed class MicCapture : MonoBehaviour
     private float[] _mono = Array.Empty<float>();
     private int _rate = 48000;
     private float _shelfAt = float.NaN;
-    private float _submergeCutoff = 20000f;
-    private float _submergeAt;
-    private LowPass _submergeOne;
-    private LowPass _submergeTwo;
+    private readonly UnderwaterFilter _underwater = new();
 
     private volatile float _dry = 1f;
     private volatile float _room;
@@ -69,7 +66,7 @@ internal sealed class MicCapture : MonoBehaviour
         if (fits) FillMono(data, count, frames);
         ApplyVoice(data, count, frames);
         if (fits) AddRoom(reverb, data, count, frames);
-        ApplySubmersion(data, count, frames);
+        _underwater.Apply(data, frames, count, _rate, _submerged);
 
         _onProcessed?.Invoke(data, channels);
         UpdatePeak(data);
@@ -126,48 +123,6 @@ internal sealed class MicCapture : MonoBehaviour
         reverb.Begin(frames);
         reverb.Send(_mono, frames, _room);
         reverb.Process(data, frames, channels);
-    }
-
-    private void ApplySubmersion(float[] buffer, int channels, int frames)
-    {
-        float target = _submerged ? Constants.Audio.UnderwaterCutoff : 20000f;
-        float step = (float)frames / _rate * Constants.Audio.UnderwaterGlideRate;
-        _submergeCutoff = Mathf.Lerp(_submergeCutoff, target, Mathf.Clamp01(step));
-
-        if (_submergeCutoff >= 19000f)
-        {
-            if (_submergeAt != 0f)
-            {
-                _submergeOne.Reset();
-                _submergeTwo.Reset();
-                _submergeAt = 0f;
-            }
-
-            return;
-        }
-
-        if (_submergeAt != _submergeCutoff)
-        {
-            _submergeOne.Set(_submergeCutoff, _rate, 0.54119610f);
-            _submergeTwo.Set(_submergeCutoff, _rate, 1.30656296f);
-            _submergeAt = _submergeCutoff;
-        }
-
-        if (channels >= 2)
-        {
-            for (int f = 0, i = 0; f < frames; f++, i += channels)
-            {
-                buffer[i] = _submergeTwo.Left(_submergeOne.Left(buffer[i]));
-                buffer[i + 1] = _submergeTwo.Right(_submergeOne.Right(buffer[i + 1]));
-            }
-
-            return;
-        }
-
-        for (int f = 0; f < frames; f++)
-        {
-            buffer[f] = _submergeTwo.Left(_submergeOne.Left(buffer[f]));
-        }
     }
 
     private static void UpdatePeak(float[] data)
