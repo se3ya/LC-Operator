@@ -74,7 +74,7 @@ internal sealed partial class VideoCameraItem
         if (!_screenRenderer.gameObject.activeInHierarchy) return true;
         if (!_screenRenderer.isVisible) return false;
 
-        Camera? view = StartOfRound.Instance != null ? StartOfRound.Instance.activeCamera : null;
+        Camera? view = StartOfRound.Instance.activeCamera;
         if (view == null) return true;
 
         if (_viewPlanesFrame != Time.frameCount)
@@ -102,7 +102,7 @@ internal sealed partial class VideoCameraItem
     private Renderer? GetScanEffect()
     {
         if (_scanEffectRenderer != null) return _scanEffectRenderer;
-        Animator? anim = HUDManager.Instance != null ? HUDManager.Instance.scanEffectAnimator : null;
+        Animator? anim = HUDManager.Instance.scanEffectAnimator;
         if (anim != null)
         {
             _scanEffectRenderer = anim.GetComponent<Renderer>() ?? anim.GetComponentInChildren<Renderer>(true);
@@ -133,11 +133,6 @@ internal sealed partial class VideoCameraItem
     private bool SuppressHudFilters(out HudFilterState snapshot)
     {
         HUDManager hud = HUDManager.Instance;
-        if (hud == null)
-        {
-            snapshot = default;
-            return false;
-        }
 
         snapshot = new HudFilterState(
             hud.drunknessFilter != null ? hud.drunknessFilter.weight : 0f,
@@ -163,10 +158,6 @@ internal sealed partial class VideoCameraItem
     private static void RestoreHudFilters(in HudFilterState snapshot)
     {
         HUDManager hud = HUDManager.Instance;
-        if (hud == null)
-        {
-            return;
-        }
 
         if (hud.drunknessFilter != null) hud.drunknessFilter.weight = snapshot.Drunkness;
         if (hud.poisonFilter != null) hud.poisonFilter.weight = snapshot.Poison;
@@ -246,7 +237,6 @@ internal sealed partial class VideoCameraItem
 
         StartOfRound round = StartOfRound.Instance;
         TimeOfDay time = TimeOfDay.Instance;
-        if (round == null || time == null) return false;
 
         var blackSky = round.blackSkyVolume;
         Light sunDirect = time.sunDirect;
@@ -301,13 +291,12 @@ internal sealed partial class VideoCameraItem
         if (!snapshot.Valid) return;
 
         StartOfRound round = StartOfRound.Instance;
-        if (round != null && round.blackSkyVolume != null)
+        if (round.blackSkyVolume != null)
         {
             round.blackSkyVolume.weight = snapshot.BlackSky;
         }
 
         TimeOfDay time = TimeOfDay.Instance;
-        if (time == null) return;
         HDAdditionalLightData? directData = GetSunDirectData(time.sunDirect);
         if (directData != null)
         {
@@ -445,7 +434,7 @@ internal sealed partial class VideoCameraItem
 
     private static Light? HidePlayerLight()
     {
-        GameNetcodeStuff.PlayerControllerB? local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        GameNetcodeStuff.PlayerControllerB? local = StartOfRound.Instance.localPlayerController;
         Light? light = local != null ? local.nightVision : null;
         if (light == null || !light.enabled) return null;
         light.enabled = false;
@@ -721,7 +710,7 @@ internal sealed partial class VideoCameraItem
 
     private void ApplyRemoteFeedViewpoint()
     {
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         if (_camera == null || playerHeldBy == null || _cameraMode.Value || playerHeldBy == local)
         {
             return;

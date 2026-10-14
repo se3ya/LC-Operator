@@ -330,7 +330,7 @@ internal static class MonitorPlayback
         {
             return null;
         }
-        return StartOfRound.Instance != null ? StartOfRound.Instance.speakerAudioSource : null;
+        return StartOfRound.Instance.speakerAudioSource;
     }
 
     private static void MatchSpeaker(AudioSource speaker, AudioSource target)

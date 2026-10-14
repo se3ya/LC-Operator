@@ -14,7 +14,6 @@ internal static class CassettePersistence
         save = null!;
         try
         {
-            if (GameNetworkManager.Instance == null) return false;
             PersistentDataContainer? current = DawnLib.GetCurrentSave();
             if (current == null) return false;
             save = current;

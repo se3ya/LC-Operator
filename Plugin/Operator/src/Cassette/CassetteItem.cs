@@ -731,12 +731,10 @@ public sealed class CassetteItem : GrabbableObject
             $"Terminal: '{Constants.Terminal.KeywordPlay} {idShown}'",
         };
 
-        var hud = HUDManager.Instance;
-        if (hud != null && playerHeldBy != null
-            && StartOfRound.Instance != null
+        if (playerHeldBy != null
             && playerHeldBy == StartOfRound.Instance.localPlayerController)
         {
-            hud.ChangeControlTipMultiple(itemProperties.toolTips, holdingItem: true, itemProperties);
+            HUDManager.Instance.ChangeControlTipMultiple(itemProperties.toolTips, holdingItem: true, itemProperties);
         }
     }
 

@@ -43,8 +43,7 @@ internal static class CrackHitPatch
     private static void Before(PlayerControllerB __instance, out HitState __state)
     {
         __state = new HitState();
-        StartOfRound sor = StartOfRound.Instance;
-        if (sor == null || __instance != sor.localPlayerController || !__instance.IsOwner) return;
+        if (__instance != StartOfRound.Instance.localPlayerController || !__instance.IsOwner) return;
         if (__instance.isPlayerDead || !__instance.AllowPlayerDeath()) return;
 
         __state.Health = __instance.health;
@@ -97,8 +96,7 @@ internal static class SteadyHoldPatch
     [HarmonyPostfix]
     private static void Steady(PlayerControllerB __instance)
     {
-        StartOfRound sor = StartOfRound.Instance;
-        if (sor == null || __instance != sor.localPlayerController) return;
+        if (__instance != StartOfRound.Instance.localPlayerController) return;
         if (__instance.currentlyHeldObjectServer is VideoCameraItem camera) camera.SteadyArms(__instance);
     }
 }

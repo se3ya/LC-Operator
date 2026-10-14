@@ -39,8 +39,7 @@ internal sealed class FeedLamps
 
         Transform view = cam.transform;
         Vector3 pos = view.position;
-        StartOfRound round = StartOfRound.Instance;
-        int mask = round != null ? round.collidersAndRoomMaskAndDefault : 256;
+        int mask = StartOfRound.Instance.collidersAndRoomMaskAndDefault;
         _outside = outside;
 
         if (now - _rankAt > Constants.Cracks.LampRank) Rank(pos, item, view, holder, mask, now);
@@ -84,7 +83,7 @@ internal sealed class FeedLamps
     {
         _rankAt = now;
         _ranked.Clear();
-        Light? sun = TimeOfDay.Instance != null ? TimeOfDay.Instance.sunDirect : null;
+        Light? sun = TimeOfDay.Instance.sunDirect;
         foreach (Entry entry in Cache)
         {
             Light? light = entry.Light;

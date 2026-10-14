@@ -9,7 +9,7 @@ internal sealed partial class VideoCameraItem
     {
         if (nowHeld)
         {
-            var newHolderLocalPlayer = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+            var newHolderLocalPlayer = StartOfRound.Instance.localPlayerController;
             if (_recorder != null && _recorder.IsActive
                 && playerHeldBy != null && playerHeldBy != newHolderLocalPlayer)
             {
@@ -106,7 +106,7 @@ internal sealed partial class VideoCameraItem
 
     private void UpdateHoverState()
     {
-        var localPlayer = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var localPlayer = StartOfRound.Instance.localPlayerController;
         bool nowHovered = false;
 
         if (localPlayer != null && localPlayer.gameplayCamera != null

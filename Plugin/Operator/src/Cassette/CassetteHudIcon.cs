@@ -24,9 +24,7 @@ internal static class CassetteHudIcon
     {
         if (cassette == null) return;
 
-        PlayerControllerB? local = GameNetworkManager.Instance != null
-            ? GameNetworkManager.Instance.localPlayerController
-            : null;
+        PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
         if (local == null || cassette.playerHeldBy != local) return;
 
         GrabbableObject[] slots = local.ItemSlots;
@@ -47,7 +45,6 @@ internal static class CassetteHudIcon
     private static Image? GetSlotIcon(int slot)
     {
         HUDManager hud = HUDManager.Instance;
-        if (hud == null) return null;
 
         if (slot == Constants.Cassette.HudUtilitySlotIndex) return hud.itemOnlySlotIcon;
 

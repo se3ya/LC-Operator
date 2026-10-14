@@ -69,8 +69,7 @@ internal static class LateCameras
         }
         if (!_wanted || IsVr()) return;
 
-        StartOfRound round = StartOfRound.Instance;
-        Camera? view = round != null ? round.activeCamera : null;
+        Camera? view = StartOfRound.Instance.activeCamera;
         if (view == null) return;
 
         int start = cameras.IndexOf(view);

@@ -47,10 +47,7 @@ internal static class LateHud
         }
         if (_vr) return;
 
-        HUDManager hud = HUDManager.Instance;
-        if (hud == null) return;
-
-        Camera ui = hud.UICamera;
+        Camera ui = HUDManager.Instance.UICamera;
         if (ui == null || !ui.isActiveAndEnabled || ui.targetTexture != null) return;
         if (IsCovered(ui)) return;
 

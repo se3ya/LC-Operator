@@ -325,7 +325,6 @@ internal sealed class ShadowAudio
     internal static bool IsNonDiegetic(AudioSource source)
     {
         SoundManager sound = SoundManager.Instance;
-        if (sound == null) return false;
 
         return source == sound.ambienceAudioNonDiagetic
                || source == sound.musicSource
@@ -343,7 +342,7 @@ internal sealed class ShadowAudio
     internal static bool IsUnderWeatherEffect(Transform target)
     {
         TimeOfDay time = TimeOfDay.Instance;
-        if (time == null || time.effects == null) return false;
+        if (time.effects == null) return false;
 
         for (Transform? walk = target; walk != null; walk = walk.parent)
         {

@@ -48,8 +48,7 @@ internal sealed partial class VideoCameraItem
 
     private bool IsLocalWebcam()
     {
-        StartOfRound sor = StartOfRound.Instance;
-        return _cameraMode.Value && playerHeldBy != null && sor != null && playerHeldBy == sor.localPlayerController;
+        return _cameraMode.Value && playerHeldBy != null && playerHeldBy == StartOfRound.Instance.localPlayerController;
     }
 
     private SelfiePose MoveToHand()

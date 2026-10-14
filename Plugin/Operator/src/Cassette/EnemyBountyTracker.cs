@@ -302,14 +302,14 @@ internal sealed class EnemyBountyTracker
 
         Plane[] planes = GeometryUtility.CalculateFrustumPlanes(_camera);
         Vector3 camPos = _camera.transform.position;
-        StartOfRound? sor = StartOfRound.Instance;
-        int losMask = sor != null ? sor.collidersAndRoomMaskAndDefault : 0;
+        StartOfRound sor = StartOfRound.Instance;
+        int losMask = sor.collidersAndRoomMaskAndDefault;
         float now = Time.time;
 
         TrackDeadBodies(sor, planes, camPos, losMask, sampleDt);
 
-        RoundManager? rm = RoundManager.Instance;
-        if (rm == null || rm.SpawnedEnemies == null) return;
+        RoundManager rm = RoundManager.Instance;
+        if (rm.SpawnedEnemies == null) return;
 
         _seen.Clear();
         foreach (EnemyAI enemy in rm.SpawnedEnemies)
@@ -431,9 +431,9 @@ internal sealed class EnemyBountyTracker
         return keys[keys.Length - 1].y;
     }
 
-    private void TrackDeadBodies(StartOfRound? round, Plane[] planes, Vector3 camPos, int losMask, float sampleDt)
+    private void TrackDeadBodies(StartOfRound round, Plane[] planes, Vector3 camPos, int losMask, float sampleDt)
     {
-        if (round == null || round.allPlayerScripts == null) return;
+        if (round.allPlayerScripts == null) return;
 
         foreach (PlayerControllerB player in round.allPlayerScripts)
         {

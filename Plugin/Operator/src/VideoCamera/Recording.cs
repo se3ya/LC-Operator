@@ -277,18 +277,14 @@ internal sealed partial class VideoCameraItem
 
     private PlayerControllerB? GetViewer()
     {
-        PlayerControllerB? local = GameNetworkManager.Instance != null
-            ? GameNetworkManager.Instance.localPlayerController
-            : null;
+        PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
         if (local == null) return null;
         return local.isPlayerDead ? local.spectatedPlayerScript : local;
     }
 
     private bool IsHeldLocally()
     {
-        PlayerControllerB? local = GameNetworkManager.Instance != null
-            ? GameNetworkManager.Instance.localPlayerController
-            : null;
+        PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
         return playerHeldBy != null && playerHeldBy == local;
     }
 
@@ -375,8 +371,7 @@ internal sealed partial class VideoCameraItem
     {
         if (deactivated) return false;
 
-        StartOfRound round = StartOfRound.Instance;
-        if (round != null && round.allPlayersDead && itemProperties != null && itemProperties.isScrap)
+        if (StartOfRound.Instance.allPlayersDead && itemProperties != null && itemProperties.isScrap)
         {
             return false;
         }

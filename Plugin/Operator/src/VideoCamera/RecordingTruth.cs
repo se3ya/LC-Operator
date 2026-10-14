@@ -40,8 +40,7 @@ internal sealed partial class VideoCameraItem
         if (block == RecordingBlock.None || block == _blockTipShown) return;
         if (playerHeldBy == null || !playerHeldBy.IsOwner || playerHeldBy.isPlayerDead) return;
 
-        HUDManager? hud = HUDManager.Instance;
-        if (hud == null) return;
+        HUDManager hud = HUDManager.Instance;
 
         _blockTipShown = block;
         switch (block)

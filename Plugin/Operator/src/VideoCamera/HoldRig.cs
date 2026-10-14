@@ -65,8 +65,7 @@ internal sealed class HoldRig : MonoBehaviour
         {
             bool blocked = _player.isPlayerDead || _player.isClimbingLadder || _player.inSpecialInteractAnimation
                            || _player.inVehicleAnimation || _player.performingEmote;
-            var sor = StartOfRound.Instance;
-            bool local = sor != null && sor.localPlayerController == _player;
+            bool local = StartOfRound.Instance.localPlayerController == _player;
             float blend = blocked && local ? Constants.Camera.HoldReleaseTime : Constants.Camera.HoldBlendTime;
             _weight = Mathf.MoveTowards(_weight, blocked ? 0f : 1f, Time.deltaTime / blend);
             float open = held.ScreenOpenAmount;

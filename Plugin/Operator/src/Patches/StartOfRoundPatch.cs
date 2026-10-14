@@ -79,7 +79,7 @@ internal static class HeldSyncPatch
     private static void Postfix(StartOfRound __instance, NetworkObjectReference[] gObjects, int[] playersHeldBy, int syncWithClient)
     {
         NetworkManager network = NetworkManager.Singleton;
-        if (network == null || network.IsServer) return;
+        if (network.IsServer) return;
         if (syncWithClient != (int)network.LocalClientId) return;
         if (gObjects == null || playersHeldBy == null) return;
 

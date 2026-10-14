@@ -14,7 +14,6 @@ internal static class CompanyMoon
         try
         {
             StartOfRound round = StartOfRound.Instance;
-            if (round == null) return false;
             if (round.inShipPhase && VideoCameraConfig.WorthlessOrbitFootage.Value) return true;
 
             SelectableLevel? level = round.currentLevel;

@@ -15,12 +15,11 @@ internal static class DeckSounds
     internal static void Init()
     {
         if (_resolved) return;
-        StartOfRound? sor = StartOfRound.Instance;
-        if (sor == null) return;
+        StartOfRound sor = StartOfRound.Instance;
         _resolved = true;
 
-        RoundManager? round = RoundManager.Instance;
-        if (round != null && round.PressButtonSFX1 != null && round.PressButtonSFX2 != null)
+        RoundManager round = RoundManager.Instance;
+        if (round.PressButtonSFX1 != null && round.PressButtonSFX2 != null)
         {
             Keys = new[] { round.PressButtonSFX1, round.PressButtonSFX2 };
         }

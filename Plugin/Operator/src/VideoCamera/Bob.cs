@@ -14,7 +14,7 @@ internal sealed partial class VideoCameraItem
         }
 
         var player = playerHeldBy;
-        if (player == null || StartOfRound.Instance?.localPlayerController != player)
+        if (player == null || StartOfRound.Instance.localPlayerController != player)
         {
             ResetCameraBob();
             return;

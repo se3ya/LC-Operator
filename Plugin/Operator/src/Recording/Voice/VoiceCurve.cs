@@ -39,8 +39,7 @@ internal static class VoiceCurve
 
         try
         {
-            StartOfRound round = StartOfRound.Instance;
-            DissonanceComms? comms = round != null ? round.voiceChatModule : null;
+            DissonanceComms? comms = StartOfRound.Instance.voiceChatModule;
             GameObject? prefab = comms != null ? comms.PlaybackPrefab : null;
             AudioSource? found = prefab != null ? prefab.GetComponentInChildren<AudioSource>(true) : null;
             if (found == null || !HasCurve(found)) return null;

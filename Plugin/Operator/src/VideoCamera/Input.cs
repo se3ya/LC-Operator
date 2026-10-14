@@ -54,8 +54,7 @@ internal sealed partial class VideoCameraItem
 
     private bool CanUse()
     {
-        var sor = StartOfRound.Instance;
-        var local = sor != null ? sor.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         if (local == null) return false;
         if (this == null || playerHeldBy != local) return false;
         if (local.isPlayerDead) return false;
@@ -74,8 +73,7 @@ internal sealed partial class VideoCameraItem
 
     private void UpdateHints()
     {
-        var sor = StartOfRound.Instance;
-        if (sor == null || playerHeldBy == null || playerHeldBy != sor.localPlayerController) return;
+        if (playerHeldBy == null || playerHeldBy != StartOfRound.Instance.localPlayerController) return;
         bool blocked = IsHintBlocked(playerHeldBy);
         if (blocked == _hintsBlocked) return;
         _hintsBlocked = blocked;
@@ -159,7 +157,7 @@ internal sealed partial class VideoCameraItem
 
         if (!_recordingState.Value && _blanksRemaining.Value <= 0 && !_hasPendingCassette.Value)
         {
-            HUDManager.Instance?.DisplayTip("No cassettes", "You are out of blank cassettes. More arrive next orbit.");
+            HUDManager.Instance.DisplayTip("No cassettes", "You are out of blank cassettes. More arrive next orbit.");
             return;
         }
 

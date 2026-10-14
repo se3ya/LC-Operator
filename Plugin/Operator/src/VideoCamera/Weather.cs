@@ -27,8 +27,7 @@ internal sealed partial class VideoCameraItem
 
         _cameraCoveredAt = now;
 
-        StartOfRound round = StartOfRound.Instance;
-        int mask = round != null ? round.collidersAndRoomMaskAndDefault : 256;
+        int mask = StartOfRound.Instance.collidersAndRoomMaskAndDefault;
         Vector3 p = cam.transform.position;
         _cameraCovered = Physics.Raycast(
             p,
@@ -107,7 +106,7 @@ internal sealed partial class VideoCameraItem
     private void RefreshWeatherAnchors()
     {
         TimeOfDay time = TimeOfDay.Instance;
-        if (time == null || time.effects == null) return;
+        if (time.effects == null) return;
 
         PlayerControllerB? reference = GetViewer();
         bool viewerOutside = reference != null && !reference.isInsideFactory;
@@ -293,7 +292,7 @@ internal sealed partial class VideoCameraItem
 
         TimeOfDay time = TimeOfDay.Instance;
         Camera? active = ActiveCamera;
-        if (time == null || time.effects == null || active == null) return;
+        if (time.effects == null || active == null) return;
 
         if (!_weatherHoldActive)
         {
@@ -677,7 +676,7 @@ internal sealed partial class VideoCameraItem
         _weatherHoldActive = false;
 
         TimeOfDay time = TimeOfDay.Instance;
-        if (time == null || time.effects == null)
+        if (time.effects == null)
         {
             _weatherHeld.Clear();
             _weatherHeldWasEnabled.Clear();
@@ -764,7 +763,7 @@ internal sealed partial class VideoCameraItem
 
         Camera? active = ActiveCamera;
         TimeOfDay time = TimeOfDay.Instance;
-        if (active == null || time == null || time.effects == null) return;
+        if (active == null || time.effects == null) return;
 
         Vector3 target = active.transform.position;
         for (int i = 0; i < _weatherHeld.Count; i++)
@@ -804,10 +803,7 @@ internal sealed partial class VideoCameraItem
         IndoorFogState state = default;
         if (!VideoCameraConfig.WeatherPerspective.Value) return state;
 
-        RoundManager round = RoundManager.Instance;
-        if (round == null) return state;
-
-        LocalVolumetricFog fog = round.indoorFog;
+        LocalVolumetricFog fog = RoundManager.Instance.indoorFog;
         if (fog == null || !fog.gameObject.activeInHierarchy) return state;
 
         Camera? active = ActiveCamera;
@@ -834,10 +830,7 @@ internal sealed partial class VideoCameraItem
     {
         if (!state.Valid) return;
 
-        RoundManager round = RoundManager.Instance;
-        if (round == null) return;
-
-        LocalVolumetricFog fog = round.indoorFog;
+        LocalVolumetricFog fog = RoundManager.Instance.indoorFog;
         if (fog == null) return;
 
         fog.transform.position = state.Position;
@@ -858,7 +851,6 @@ internal sealed partial class VideoCameraItem
         if (!VideoCameraConfig.WeatherPerspective.Value) return false;
 
         TimeOfDay time = TimeOfDay.Instance;
-        if (time == null) return false;
 
         MeteorShowers meteors = time.MeteorWeather;
         if (meteors == null || meteors.meteors == null || meteors.meteors.Count == 0) return false;

@@ -18,8 +18,8 @@ internal static class StoreCostSync
         {
             try
             {
-                NetworkManager? nm = NetworkManager.Singleton;
-                if (nm != null && nm.IsListening && !nm.IsServer && _hasHostValue) return _hostValue;
+                NetworkManager nm = NetworkManager.Singleton;
+                if (nm.IsListening && !nm.IsServer && _hasHostValue) return _hostValue;
                 return VideoCameraConfig.StoreCost.Value;
             }
             catch
@@ -31,8 +31,8 @@ internal static class StoreCostSync
 
     internal static void Register()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || nm.CustomMessagingManager == null || _registered) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager == null || _registered) return;
 
         nm.CustomMessagingManager.RegisterNamedMessageHandler(MsgCost, OnCost);
 
@@ -53,16 +53,13 @@ internal static class StoreCostSync
 
     internal static void Unregister()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm != null)
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager != null)
         {
-            if (nm.CustomMessagingManager != null)
-            {
-                try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgCost); } catch { }
-                try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgRequest); } catch { }
-            }
-            nm.OnClientConnectedCallback -= SendToClient;
+            try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgCost); } catch { }
+            try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgRequest); } catch { }
         }
+        nm.OnClientConnectedCallback -= SendToClient;
 
         _hasHostValue = false;
         _hostValue = 0;
@@ -71,8 +68,8 @@ internal static class StoreCostSync
 
     private static void SendToClient(ulong clientId)
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || !nm.IsServer || nm.CustomMessagingManager == null) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (!nm.IsServer || nm.CustomMessagingManager == null) return;
         if (clientId == nm.LocalClientId) return;
 
         using var writer = new FastBufferWriter(sizeof(int), Allocator.Temp);
@@ -87,8 +84,7 @@ internal static class StoreCostSync
 
     private static void OnCost(ulong from, FastBufferReader reader)
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || from != NetworkManager.ServerClientId) return;
+        if (from != NetworkManager.ServerClientId) return;
 
         int cost;
         try

@@ -214,7 +214,7 @@ internal sealed partial class VideoCameraItem
     private static bool TryGetLocalMask(out int mask)
     {
         mask = 0;
-        var local = GameNetworkManager.Instance != null ? GameNetworkManager.Instance.localPlayerController : null;
+        var local = GameNetworkManager.Instance.localPlayerController;
         Camera? main = local != null ? local.gameplayCamera : null;
         if (main == null) return false;
         if (main != _maskCamera)
@@ -541,7 +541,7 @@ internal sealed partial class VideoCameraItem
 
     private void SuppressPlayerLights()
     {
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         if (local == null) return;
 
         Light? vanilla = local.nightVision;

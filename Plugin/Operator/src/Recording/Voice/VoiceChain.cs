@@ -187,9 +187,7 @@ internal sealed class VoiceChainController : MonoBehaviour
 
     private void Update()
     {
-        PlayerControllerB? local = GameNetworkManager.Instance != null
-            ? GameNetworkManager.Instance.localPlayerController
-            : null;
+        PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
         bool inside = _held && local != null ? local.isInsideFactory : _inside;
         VoiceTargets t = VoiceTargets.Get(local, inside);
 

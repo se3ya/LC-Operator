@@ -10,7 +10,7 @@ internal sealed partial class VideoCameraItem
 
     private void UpdateNearBlur()
     {
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         bool holding = local != null && playerHeldBy == local && !isPocketed && !local.isPlayerDead;
         if (!holding)
         {
@@ -19,7 +19,7 @@ internal sealed partial class VideoCameraItem
         }
 
         HUDManager hud = HUDManager.Instance;
-        if (hud == null || hud.playerGraphicsVolume == null) return;
+        if (hud.playerGraphicsVolume == null) return;
         if (_nearBlur == null)
         {
             VolumeProfile profile = hud.playerGraphicsVolume.sharedProfile;
@@ -38,8 +38,8 @@ internal sealed partial class VideoCameraItem
     private void RestoreNearBlur()
     {
         _nearBlurShort = false;
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         if (local != null && local.IsInspectingItem) return;
-        if (HUDManager.Instance != null) HUDManager.Instance.SetNearDepthOfFieldEnabled(true);
+        HUDManager.Instance.SetNearDepthOfFieldEnabled(true);
     }
 }

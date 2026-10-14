@@ -47,13 +47,13 @@ internal sealed partial class VideoCameraItem
         float dt = Time.deltaTime;
         float response = Mathf.Max(0f, VideoCameraConfig.FearResponse.Value);
 
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         bool holdingLocally = playerHeldBy != null && playerHeldBy == local;
         bool rollingLocally = playerHeldBy == null && _recorder != null && _recorder.IsActive;
         float fearRaw;
         if (holdingLocally || rollingLocally)
         {
-            fearRaw = StartOfRound.Instance != null ? Mathf.Clamp01(StartOfRound.Instance.fearLevel) : 0f;
+            fearRaw = Mathf.Clamp01(StartOfRound.Instance.fearLevel);
             TrySetOperatorFear(fearRaw);
         }
         else

@@ -43,16 +43,12 @@ internal sealed partial class VideoCameraItem
 
     private static bool IsRaining()
     {
-        var tod = TimeOfDay.Instance;
-        if (tod != null)
+        switch (TimeOfDay.Instance.currentLevelWeather)
         {
-            switch (tod.currentLevelWeather)
-            {
-                case LevelWeatherType.Rainy:
-                case LevelWeatherType.Stormy:
-                case LevelWeatherType.Flooded:
-                    return true;
-            }
+            case LevelWeatherType.Rainy:
+            case LevelWeatherType.Stormy:
+            case LevelWeatherType.Flooded:
+                return true;
         }
         return RainAmbienceActive();
     }

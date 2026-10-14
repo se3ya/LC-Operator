@@ -8,7 +8,7 @@ internal static class QuotaRepairPatch
     [HarmonyPostfix]
     private static void Postfix()
     {
-        if (StartOfRound.Instance == null || !StartOfRound.Instance.IsServer) return;
+        if (!StartOfRound.Instance.IsServer) return;
         if (VideoCameraConfig.LensRepair.Value == LensRepair.Never) return;
         VideoCameraItem.ServerRepairAllLenses("new quota");
     }

@@ -32,7 +32,6 @@ internal static class FirstFootage
         save = null;
         try
         {
-            if (GameNetworkManager.Instance == null) return null;
             save = DawnLib.GetCurrentSave();
             if (save == null) return null;
 

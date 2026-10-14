@@ -17,16 +17,14 @@ internal static class LobbySaveKey
         get
         {
             if (_hostSaveName.Length > 0) return _hostSaveName;
-            return MakeSafe(GameNetworkManager.Instance != null
-                ? GameNetworkManager.Instance.currentSaveFileName ?? string.Empty
-                : string.Empty);
+            return MakeSafe(GameNetworkManager.Instance.currentSaveFileName ?? string.Empty);
         }
     }
 
     internal static void Register()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || nm.CustomMessagingManager == null || _registered) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager == null || _registered) return;
 
         nm.CustomMessagingManager.RegisterNamedMessageHandler(MsgSaveKey, OnSaveKey);
 
@@ -45,15 +43,12 @@ internal static class LobbySaveKey
 
     internal static void Unregister()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm != null)
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager != null)
         {
-            if (nm.CustomMessagingManager != null)
-            {
-                try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgSaveKey); } catch { }
-            }
-            nm.OnClientConnectedCallback -= SendToClient;
+            try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgSaveKey); } catch { }
         }
+        nm.OnClientConnectedCallback -= SendToClient;
 
         _hostSaveName = string.Empty;
         _registered = false;
@@ -61,11 +56,11 @@ internal static class LobbySaveKey
 
     private static void SendToClient(ulong clientId)
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || !nm.IsServer || nm.CustomMessagingManager == null) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (!nm.IsServer || nm.CustomMessagingManager == null) return;
         if (clientId == nm.LocalClientId) return;
 
-        string save = MakeSafe(GameNetworkManager.Instance != null ? GameNetworkManager.Instance.currentSaveFileName ?? string.Empty : string.Empty);
+        string save = MakeSafe(GameNetworkManager.Instance.currentSaveFileName ?? string.Empty);
         if (save.Length == 0) return;
 
         byte[] payload = Encoding.UTF8.GetBytes(save);
@@ -77,8 +72,7 @@ internal static class LobbySaveKey
 
     private static void OnSaveKey(ulong senderClientId, FastBufferReader reader)
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || nm.IsServer || senderClientId != NetworkManager.ServerClientId) return;
+        if (NetworkManager.Singleton.IsServer || senderClientId != NetworkManager.ServerClientId) return;
 
         try
         {

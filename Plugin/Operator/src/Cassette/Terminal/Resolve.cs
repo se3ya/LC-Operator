@@ -72,7 +72,7 @@ internal static partial class TerminalCassettePlayback
 
     private static CassetteItem? GetHeldCassette()
     {
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         if (local == null) return null;
         var held = local.currentlyHeldObjectServer;
         return held != null ? held.GetComponent<CassetteItem>() : null;

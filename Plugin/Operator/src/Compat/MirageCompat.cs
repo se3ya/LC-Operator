@@ -53,9 +53,7 @@ internal static class MirageCompat
             if (enemy == null || enemy.isEnemyDead) return false;
             if (enemy is DressGirlAI) return false;
 
-            PlayerControllerB? local = GameNetworkManager.Instance != null
-                ? GameNetworkManager.Instance.localPlayerController
-                : null;
+            PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
             if (local == null) return false;
 
             if (local.isInsideFactory != enemy.isOutside) return false;

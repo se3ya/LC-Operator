@@ -217,7 +217,7 @@ internal sealed class ShadowVoiceChat
     {
         StartOfRound round = StartOfRound.Instance;
         GameNetworkManager network = GameNetworkManager.Instance;
-        if (round == null || round.allPlayerScripts == null || network == null)
+        if (round.allPlayerScripts == null)
         {
             if (_streams.Count > 0) Publish(true);
             return;

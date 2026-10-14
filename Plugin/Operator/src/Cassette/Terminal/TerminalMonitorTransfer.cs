@@ -18,21 +18,20 @@ internal static class TerminalMonitorTransfer
 
     internal static bool Enabled =>
         ShipMonitors.Available
-        && NetworkManager.Singleton != null
         && NetworkManager.Singleton.IsListening;
 
     internal static bool IsActive => MonitorPlayback.IsActive;
 
     private static CustomMessagingManager? Cmm =>
-        NetworkManager.Singleton != null ? NetworkManager.Singleton.CustomMessagingManager : null;
+        NetworkManager.Singleton.CustomMessagingManager;
 
     private static bool IsServer =>
-        NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+        NetworkManager.Singleton.IsServer;
 
     internal static void Register()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || nm.CustomMessagingManager == null || _registered) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager == null || _registered) return;
 
         CustomMessagingManager cmm = nm.CustomMessagingManager;
         cmm.RegisterNamedMessageHandler(MsgPlay, OnPlay);

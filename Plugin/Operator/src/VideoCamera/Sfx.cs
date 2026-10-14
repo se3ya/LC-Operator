@@ -66,8 +66,7 @@ internal sealed partial class VideoCameraItem
 
     private float GetSfxVolume(float ownVolume, float bystanderVolume)
     {
-        var sor = StartOfRound.Instance;
-        var local = sor != null ? sor.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         bool isLocalHolder = local != null && playerHeldBy == local;
         return isLocalHolder ? ownVolume : bystanderVolume;
     }

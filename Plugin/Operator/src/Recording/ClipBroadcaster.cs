@@ -108,14 +108,13 @@ internal sealed class ClipBroadcaster : MonoBehaviour
         return Instance;
     }
 
-    private static NetworkManager? Net => NetworkManager.Singleton;
+    private static NetworkManager Net => NetworkManager.Singleton;
 
-    private static CustomMessagingManager? Cmm =>
-        Net != null ? Net.CustomMessagingManager : null;
+    private static CustomMessagingManager? Cmm => Net.CustomMessagingManager;
 
-    private static bool IsServer => Net != null && Net.IsServer;
+    private static bool IsServer => Net.IsServer;
 
-    private static ulong LocalId => Net != null ? Net.LocalClientId : 0UL;
+    private static ulong LocalId => Net.LocalClientId;
 
     public bool IsReady => _registered && Cmm != null;
 
@@ -170,8 +169,7 @@ internal sealed class ClipBroadcaster : MonoBehaviour
 
     private void SetRecipients(string fileName, ulong sender)
     {
-        NetworkManager? manager = Net;
-        if (manager == null || !IsServer) return;
+        if (!IsServer) return;
 
         var listeners = new HashSet<ulong>();
         foreach (ulong id in LobbyPeers.Listeners)
@@ -185,8 +183,8 @@ internal sealed class ClipBroadcaster : MonoBehaviour
 
     private static bool AnyoneToSendTo()
     {
-        NetworkManager? manager = NetworkManager.Singleton;
-        if (manager == null || !manager.IsListening) return false;
+        NetworkManager manager = NetworkManager.Singleton;
+        if (!manager.IsListening) return false;
 
         try
         {
@@ -350,14 +348,14 @@ internal sealed class ClipBroadcaster : MonoBehaviour
     private static void SendToServer(string message, FastBufferWriter writer, NetworkDelivery delivery)
     {
         CustomMessagingManager? cmm = Cmm;
-        if (cmm == null || Net == null) return;
+        if (cmm == null) return;
         cmm.SendNamedMessage(message, NetworkManager.ServerClientId, writer, delivery);
     }
 
     private static void SendToEveryClient(string message, FastBufferWriter writer, NetworkDelivery delivery)
     {
         CustomMessagingManager? cmm = Cmm;
-        if (cmm == null || Net == null) return;
+        if (cmm == null) return;
 
         foreach (ulong id in Net.ConnectedClientsIds)
         {
@@ -686,7 +684,7 @@ internal sealed class ClipBroadcaster : MonoBehaviour
         {
             _sendFloor[fileName] = floor;
         }
-        else if (sender != ulong.MaxValue && Net != null && Net.ConnectedClientsIds.Contains(sender))
+        else if (sender != ulong.MaxValue && Net.ConnectedClientsIds.Contains(sender))
         {
             if (!_lastFloorSent.TryGetValue(fileName, out int lastF) || lastF != floor)
             {
@@ -702,7 +700,6 @@ internal sealed class ClipBroadcaster : MonoBehaviour
 
     private int GetAckFloor(string fileName)
     {
-        if (Net == null) return 0;
         _ackByReceiver.TryGetValue(fileName, out Dictionary<ulong, int>? map);
 
         ulong sender = _senderByFile.TryGetValue(fileName, out ulong s) ? s : ulong.MaxValue;
@@ -784,7 +781,7 @@ internal sealed class ClipBroadcaster : MonoBehaviour
                     yield break;
                 }
 
-                if (IsServer && Net != null && clip.SenderClientId != LocalId
+                if (IsServer && clip.SenderClientId != LocalId
                     && !Net.ConnectedClientsIds.Contains(clip.SenderClientId))
                 {
                     Plugin.Log.LogWarning($"Client {clip.SenderClientId} left, aborting '{fileName}' at {clip.ReceivedIds.Count} of {clip.ExpectedChunks} chunks.");

@@ -11,9 +11,7 @@ internal static class CentipedeMufflePatch
     [HarmonyPostfix]
     private static void OnClingToPlayer(CentipedeAI __instance, PlayerControllerB playerScript)
     {
-        PlayerControllerB? local = GameNetworkManager.Instance != null
-            ? GameNetworkManager.Instance.localPlayerController
-            : null;
+        PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
         if (local != null && playerScript == local)
         {
             EnemyVoiceMuffle.SetFlea(__instance);

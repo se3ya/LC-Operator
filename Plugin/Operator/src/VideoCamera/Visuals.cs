@@ -143,7 +143,7 @@ internal sealed partial class VideoCameraItem
         itemProperties.toolTips = tooltips;
 
         if (!IsHintHolder() || isPocketed || IsHintBlocked(playerHeldBy)) return;
-        HUDManager.Instance?.ChangeControlTipMultiple(tooltips, holdingItem: true, itemProperties);
+        HUDManager.Instance.ChangeControlTipMultiple(tooltips, holdingItem: true, itemProperties);
     }
 
     private string[] BuildHints(bool dead, bool eject)
@@ -177,13 +177,13 @@ internal sealed partial class VideoCameraItem
     private void HideHints()
     {
         HUDManager hud = HUDManager.Instance;
-        if (hud == null || itemProperties == null || hud.controlTipLines.Length == 0) return;
+        if (itemProperties == null || hud.controlTipLines.Length == 0) return;
         if (hud.controlTipLines[0].text == $"Drop {itemProperties.itemName} : [G]") hud.ClearControlTips();
     }
 
     private bool IsHintHolder()
     {
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         return playerHeldBy != null && local != null && playerHeldBy == local;
     }
 
