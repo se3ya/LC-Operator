@@ -73,7 +73,7 @@ internal sealed class VideoPipe
             {
                 for (int i = 0; i < frame.Repeats; i++)
                 {
-                    await outputStream.WriteAsync(frame.Buffer, 0, frame.Buffer.Length, cancellationToken).ConfigureAwait(false);
+                    await outputStream.WriteAsync(frame.Buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
                     Interlocked.Increment(ref _framesWritten);
                     Interlocked.Decrement(ref _queuedSlots);
                 }
@@ -107,7 +107,7 @@ internal sealed class VideoPipe
         long fill = Math.Min(missing, (long)(MaxEndFill * _fps));
         for (long i = 0; i < fill; i++)
         {
-            await outputStream.WriteAsync(last, 0, last.Length, cancellationToken).ConfigureAwait(false);
+            await outputStream.WriteAsync(last.AsMemory(), cancellationToken).ConfigureAwait(false);
             Interlocked.Increment(ref _framesWritten);
         }
 

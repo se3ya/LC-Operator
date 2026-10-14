@@ -133,7 +133,7 @@ internal sealed class AudioPipe
                                 _scratch = new byte[byteCount];
                             }
                             Buffer.BlockCopy(samples, skip * sizeof(float), _scratch, 0, byteCount);
-                            await outputStream.WriteAsync(_scratch, 0, byteCount, cancellationToken).ConfigureAwait(false);
+                            await outputStream.WriteAsync(_scratch.AsMemory(0, byteCount), cancellationToken).ConfigureAwait(false);
                             _floatsWritten += count;
                         }
                         _pool.Return(samples);
@@ -228,7 +228,7 @@ internal sealed class AudioPipe
 
         int bytes = floats * sizeof(float);
 
-        await outputStream.WriteAsync(silence, 0, bytes, cancellationToken).ConfigureAwait(false);
+        await outputStream.WriteAsync(silence.AsMemory(0, bytes), cancellationToken).ConfigureAwait(false);
         _floatsWritten += floats;
         _floatsPadded += floats;
         _debt += floats;
@@ -249,7 +249,7 @@ internal sealed class AudioPipe
         while (fill > 0 && chunk > 0)
         {
             int floats = (int)Math.Min(fill, chunk);
-            await outputStream.WriteAsync(silence, 0, floats * sizeof(float), cancellationToken).ConfigureAwait(false);
+            await outputStream.WriteAsync(silence.AsMemory(0, floats * sizeof(float)), cancellationToken).ConfigureAwait(false);
             _floatsWritten += floats;
             _floatsFilled += floats;
             fill -= floats;

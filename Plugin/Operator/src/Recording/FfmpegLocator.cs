@@ -272,9 +272,9 @@ internal static class FfmpegLocator
         long received = 0;
         long nextLog = 10L * 1024 * 1024;
         int read;
-        while ((read = await src.ReadAsync(buffer, 0, buffer.Length, CancellationToken.None).ConfigureAwait(false)) > 0)
+        while ((read = await src.ReadAsync(buffer.AsMemory(), CancellationToken.None).ConfigureAwait(false)) > 0)
         {
-            await dst.WriteAsync(buffer, 0, read, CancellationToken.None).ConfigureAwait(false);
+            await dst.WriteAsync(buffer.AsMemory(0, read), CancellationToken.None).ConfigureAwait(false);
             received += read;
             if (received >= nextLog)
             {
