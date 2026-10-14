@@ -16,8 +16,8 @@ internal static class LobbyPeers
 
     internal static void Register()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || nm.CustomMessagingManager == null) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager == null) return;
 
         _listeners.Clear();
 
@@ -47,16 +47,13 @@ internal static class LobbyPeers
 
     internal static void Unregister()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm != null)
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.CustomMessagingManager != null)
         {
-            if (nm.CustomMessagingManager != null)
-            {
-                try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgHello); } catch { }
-                try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgState); } catch { }
-            }
-            nm.OnClientDisconnectCallback -= Drop;
+            try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgHello); } catch { }
+            try { nm.CustomMessagingManager.UnregisterNamedMessageHandler(MsgState); } catch { }
         }
+        nm.OnClientDisconnectCallback -= Drop;
 
         _listeners.Clear();
         _registered = false;
@@ -66,8 +63,8 @@ internal static class LobbyPeers
 
     private static void OnHello(ulong from, FastBufferReader reader)
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || !nm.IsServer || nm.CustomMessagingManager == null) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (!nm.IsServer || nm.CustomMessagingManager == null) return;
         if (from == nm.LocalClientId) return;
 
         _listeners.Add(from);
@@ -75,13 +72,14 @@ internal static class LobbyPeers
         using var writer = new FastBufferWriter(sizeof(float), Allocator.Temp);
         writer.WriteValueSafe(TerminalCassettePlayback.Volume);
         nm.CustomMessagingManager.SendNamedMessage(MsgState, from, writer, NetworkDelivery.Reliable);
+        TerminalCoWatch.SendState(from);
         TelevisionCoWatch.SendSnapshot(from);
     }
 
     private static void OnState(ulong from, FastBufferReader reader)
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        if (nm == null || nm.IsServer || from != NetworkManager.ServerClientId) return;
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm.IsServer || from != NetworkManager.ServerClientId) return;
 
         reader.ReadValueSafe(out float volume);
         if (float.IsNaN(volume)) return;
