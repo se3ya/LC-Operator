@@ -24,6 +24,7 @@ namespace Operator;
 [BepInDependency(ModGUIDs.LethalSponge, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(ModGUIDs.MoreShipUpgrades, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(ModGUIDs.OpenBodyCams, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(ModGUIDs.SelfSortingStorage, BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
     private readonly Harmony _harmony = new(MyPluginInfo.PLUGIN_GUID);
@@ -66,6 +67,7 @@ public class Plugin : BaseUnityPlugin
 
         _harmony.PatchAll();
         LethalSpongeCompat.Init();
+        SelfSortingStorageCompat.Init();
 
         if (VideoCameraConfig.RecordingEnabled.Value)
         {
