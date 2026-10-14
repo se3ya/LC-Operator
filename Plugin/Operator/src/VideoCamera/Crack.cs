@@ -3,6 +3,7 @@ using GameNetcodeStuff;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Operator.Cassette;
 
 namespace Operator;
 
@@ -145,6 +146,15 @@ internal sealed partial class VideoCameraItem
             {
                 Plugin.Log.LogWarning($"Failed to repair camera lenses on {reason}: {ex.Message}");
             }
+        }
+
+        try
+        {
+            CameraPersistence.ClearCracks();
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.LogWarning($"Failed to repair stored camera lenses on {reason}: {ex.Message}");
         }
     }
 
