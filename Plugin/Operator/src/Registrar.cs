@@ -1,6 +1,7 @@
 using Dawn;
 using Unity.Netcode;
 using UnityEngine;
+using Operator.Cassette;
 using Operator.Recording;
 
 namespace Operator;
@@ -24,6 +25,11 @@ internal static class VideoCameraRegistrar
         }
 
         item.floorYOffset = Constants.Camera.FloorYOffset;
+        item.saveItemVariable = CameraPersistence.IsDawnItemSaving();
+        if (!item.saveItemVariable)
+        {
+            Plugin.Log.LogInfo("Dawn item saving is turned off, so camcorder will not keep its tape or damage after a reload.");
+        }
 
         if (item.spawnPrefab == null)
         {
