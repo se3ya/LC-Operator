@@ -50,7 +50,7 @@ internal struct VoiceTargets
                 }
             }
         }
-        else if (local.isUnderwater)
+        else if (IsPlayerUnderwater(local))
         {
             t.LowpassCutoff = 600f;
             t.LowpassQ = 1f;
@@ -71,7 +71,7 @@ internal struct VoiceTargets
     private static float GetPitch(PlayerControllerB local)
     {
         SoundManager sm = SoundManager.Instance;
-        if (sm == null || sm.playerVoicePitches == null)
+        if (sm.playerVoicePitches == null)
         {
             return 1f;
         }
@@ -81,5 +81,12 @@ internal struct VoiceTargets
             return 1f;
         }
         return Mathf.Clamp(sm.playerVoicePitches[idx], 0.5f, 2f);
+    }
+
+    private static bool IsPlayerUnderwater(PlayerControllerB local)
+    {
+        return local.isUnderwater
+            && local.underwaterCollider != null
+            && local.underwaterCollider.bounds.Contains(local.gameplayCamera.transform.position);
     }
 }
