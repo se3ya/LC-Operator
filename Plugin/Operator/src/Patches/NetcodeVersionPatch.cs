@@ -13,8 +13,7 @@ internal static class VersionStampPatch
     {
         try
         {
-            NetworkManager? nm = NetworkManager.Singleton;
-            if (nm == null) return;
+            NetworkManager nm = NetworkManager.Singleton;
 
             byte[]? existing = nm.NetworkConfig.ConnectionData;
             string payload = existing != null && existing.Length > 0
@@ -44,8 +43,7 @@ internal static class VersionCheckPatch
         {
             if (!response.Approved) return;
 
-            NetworkManager? nm = NetworkManager.Singleton;
-            if (nm == null || request.ClientNetworkId == nm.LocalClientId) return;
+            if (request.ClientNetworkId == NetworkManager.Singleton.LocalClientId) return;
 
             int theirs = ReadVersion(request.Payload);
             if (theirs == Constants.Network.NetcodeVersion) return;
@@ -71,7 +69,7 @@ internal static class VersionCheckPatch
         {
             string field = fields[i];
             if (!field.StartsWith(Constants.Network.NetcodeVersionField, StringComparison.Ordinal)) continue;
-            return int.TryParse(field.Substring(Constants.Network.NetcodeVersionField.Length), out int parsed)
+            return int.TryParse(field.AsSpan(Constants.Network.NetcodeVersionField.Length), out int parsed)
                 ? parsed
                 : -1;
         }
