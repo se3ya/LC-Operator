@@ -7,7 +7,7 @@ namespace Operator;
 
 internal sealed partial class VideoCameraItem
 {
-    private const string OsdGlyphOrder = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ:./-+% ";
+    internal const string OsdGlyphOrder = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ:./-+% ";
 
     private static Texture2D? _osdAtlas;
     private static float _osdAtlasW;
@@ -516,8 +516,7 @@ internal sealed partial class VideoCameraItem
 
     private static string OsdGameClock()
     {
-        TimeOfDay? tod = TimeOfDay.Instance;
-        if (tod == null) return string.Empty;
+        TimeOfDay tod = TimeOfDay.Instance;
         int totalMin = (int)(tod.normalizedTimeOfDay * 60f * tod.numberOfHours) + 360;
         int hr24 = totalMin / 60;
         int min = totalMin % 60;
@@ -530,14 +529,14 @@ internal sealed partial class VideoCameraItem
     private static string OsdGameDay()
     {
         var sor = StartOfRound.Instance;
-        if (sor == null || sor.gameStats == null) return string.Empty;
+        if (sor.gameStats == null) return string.Empty;
         return $"DAY {sor.gameStats.daysSpent + 1}";
     }
 
     private static string OsdVhsDate()
     {
         var sor = StartOfRound.Instance;
-        int days = sor != null && sor.gameStats != null ? sor.gameStats.daysSpent : 0;
+        int days = sor.gameStats != null ? sor.gameStats.daysSpent : 0;
         DateTime d = new DateTime(1986, 1, 1).AddDays(days);
         return d.ToString("MMM", CultureInfo.InvariantCulture).ToUpperInvariant() + $".{d.Day:00} {d.Year}";
     }
