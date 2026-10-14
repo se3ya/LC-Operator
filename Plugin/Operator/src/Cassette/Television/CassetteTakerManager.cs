@@ -12,6 +12,8 @@ internal sealed class CassetteTakerManager : MonoBehaviour
 
     internal static CassetteTakerDeck? ActiveDeck { get; private set; }
 
+    internal static bool IsRunning => _instance != null;
+
     private CassetteTakerDeck? _deck;
     private TVScript? _attachedTv;
     private float _nextPoll;
@@ -48,6 +50,7 @@ internal sealed class CassetteTakerManager : MonoBehaviour
     private void Update()
     {
         TelevisionPlayback.Update();
+        TelevisionCoWatch.Update();
 
         if (Time.time < _nextPoll) return;
         _nextPoll = Time.time + Constants.Television.AttachPollInterval;
