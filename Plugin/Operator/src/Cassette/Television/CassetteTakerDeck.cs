@@ -331,10 +331,10 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
 
     private string GetClockText()
     {
-        StartOfRound? sor = StartOfRound.Instance;
-        TimeOfDay? time = TimeOfDay.Instance;
+        StartOfRound sor = StartOfRound.Instance;
+        TimeOfDay time = TimeOfDay.Instance;
         int key;
-        if (sor == null || time == null || sor.inShipPhase || !time.currentDayTimeStarted)
+        if (sor.inShipPhase || !time.currentDayTimeStarted)
         {
             float blink = Constants.Television.ClockBlinkInterval;
             key = Time.unscaledTime % (blink * 2f) < blink ? -1 : -2;
@@ -404,7 +404,7 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
         }
         if (_startStop != null)
         {
-            _startStop.hoverTip = TelevisionCoWatch.IsPlayRequested ? "Stop : [E]" : "Play : [E]";
+            _startStop.hoverTip = TelevisionCoWatch.IsPlayRequested || TelevisionCoWatch.IsPreparing ? "Stop : [E]" : "Play : [E]";
         }
         if (_pauseResume != null)
         {
@@ -456,7 +456,7 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
     private void OnPlayStop(PlayerControllerB player)
     {
         if (!TelevisionCoWatch.HasLoaded) return;
-        if (TelevisionCoWatch.IsPlayRequested) TelevisionCoWatch.RequestStop();
+        if (TelevisionCoWatch.IsPlayRequested || TelevisionCoWatch.IsPreparing) TelevisionCoWatch.RequestStop();
         else TelevisionCoWatch.RequestPlay();
     }
 
@@ -499,7 +499,7 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
         float scrollY = Mouse.current != null ? Mouse.current.scroll.ReadValue().y : 0f;
         if (Mathf.Abs(scrollY) < 0.01f) return;
 
-        PlayerControllerB? local = GameNetworkManager.Instance != null ? GameNetworkManager.Instance.localPlayerController : null;
+        PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
         Camera? cam = local != null ? local.gameplayCamera : null;
         if (cam == null) return;
 
@@ -730,9 +730,7 @@ internal sealed class CassetteTakerDeck : MonoBehaviour
 
     private static CassetteItem? LocalHeldCassette()
     {
-        PlayerControllerB? local = GameNetworkManager.Instance != null
-            ? GameNetworkManager.Instance.localPlayerController
-            : null;
+        PlayerControllerB? local = GameNetworkManager.Instance.localPlayerController;
         return local != null ? local.currentlyHeldObjectServer as CassetteItem : null;
     }
 
