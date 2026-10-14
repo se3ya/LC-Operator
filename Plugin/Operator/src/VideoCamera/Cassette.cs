@@ -22,6 +22,12 @@ internal sealed partial class VideoCameraItem
             return;
         }
 
+        if (this == null || !IsSpawned)
+        {
+            Plugin.Log.LogError("Dropped a finished take because its camera was removed.");
+            return;
+        }
+
         EnemyBountyTracker? tracker;
         if (fileName.Length > 0 && _stoppedTrackers.TryGetValue(fileName, out EnemyBountyTracker stashed))
         {
@@ -36,7 +42,7 @@ internal sealed partial class VideoCameraItem
 
         if (!result.FileOk || string.IsNullOrEmpty(result.OutputPath))
         {
-            HUDManager.Instance?.DisplayTip("Tape blank!", "Your last take could not be written. No cassette was produced.", true);
+            HUDManager.Instance.DisplayTip("Tape blank!", "Your last take could not be written. No cassette was produced.", true);
             ReportRecordingFailure(result.EndedByHandoff);
             return;
         }
@@ -77,7 +83,7 @@ internal sealed partial class VideoCameraItem
 
         if (!result.FileOk)
         {
-            HUDManager.Instance?.DisplayTip("Tape blank!", "Your last take could not be written, so tape came out blank.", true);
+            HUDManager.Instance.DisplayTip("Tape blank!", "Your last take could not be written, so tape came out blank.", true);
         }
 
         float duration = (float)result.Duration;
@@ -234,6 +240,11 @@ internal sealed partial class VideoCameraItem
     private void OnClientGone(ulong clientId)
     {
         if (!IsServer || !IsSpawned) return;
+        if (_serverStoredAwait.Length > 0 && clientId == _serverStoredAwaitOwner)
+        {
+            ServerForgetStored("the player writing the ejected take left");
+            ServerResetTapeClock();
+        }
         if (clientId != _serverSessionOwner && clientId != OwnerClientId) return;
         if (!_recordingState.Value && !_sessionOpen.Value && !_serverTakeOpen) return;
         TrySetRecordingState(false);
@@ -485,7 +496,22 @@ internal sealed partial class VideoCameraItem
         ServerBeginEject(spawnWorldPosition);
     }
 
-    private void EjectActiveTake()
+    internal void KeepActiveTake()
+    {
+        if (!_networkReady) return;
+        if (_recorder != null && _recorder.IsActive)
+        {
+            CloseActiveTake(eject: false);
+            return;
+        }
+
+        if (IsServer) ServerKeepChain();
+        else KeepChainServerRpc();
+    }
+
+    private void EjectActiveTake() => CloseActiveTake(eject: true);
+
+    private void CloseActiveTake(bool eject)
     {
         Recorder recorder = _recorder!;
         string fileName = recorder.OutputFileName;
@@ -493,7 +519,7 @@ internal sealed partial class VideoCameraItem
 
         if (!_hasPendingCassette.Value && _blanksRemaining.Value <= 0)
         {
-            HUDManager.Instance?.DisplayTip("No tape", "You are out of blank cassettes. More arrive next orbit.");
+            if (eject) HUDManager.Instance.DisplayTip("No tape", "You are out of blank cassettes. More arrive next orbit.");
             return;
         }
 
@@ -515,17 +541,26 @@ internal sealed partial class VideoCameraItem
 
         _ejectedTakes[fileName] = (Recorder.GetLobbyOutputDirectory(), breakdown);
 
-        if (_recordingState.Value) RequestStopRecording();
-        TryStopRecording();
+        if (eject)
+        {
+            if (_recordingState.Value) RequestStopRecording();
+            TryStopRecording();
+        }
+        else
+        {
+            recorder.MarkHandoff();
+            TryStopRecording(handoff: true);
+            if (_recordingState.Value) RequestStopRecording();
+        }
 
         string cassetteId = CassetteIdGenerator.GenerateId(fileName);
         if (IsServer)
         {
-            ServerEjectTake(NetworkManager.LocalClientId, cassetteId, fileName, timestamp, duration, value, breakdown, age, spawnPos);
+            ServerEjectTake(NetworkManager.LocalClientId, cassetteId, fileName, timestamp, duration, value, breakdown, age, spawnPos, eject);
         }
         else
         {
-            EjectTakeServerRpc(cassetteId, fileName, timestamp, duration, value, breakdown, age, spawnPos);
+            EjectTakeServerRpc(cassetteId, fileName, timestamp, duration, value, breakdown, age, spawnPos, eject);
         }
     }
 
@@ -539,9 +574,10 @@ internal sealed partial class VideoCameraItem
         string breakdown,
         float age,
         Vector3 spawnPosition,
+        bool eject,
         ServerRpcParams rpcParams = default)
     {
-        ServerEjectTake(rpcParams.Receive.SenderClientId, cassetteId, fileName, timestamp, duration, value, breakdown, age, spawnPosition);
+        ServerEjectTake(rpcParams.Receive.SenderClientId, cassetteId, fileName, timestamp, duration, value, breakdown, age, spawnPosition, eject);
     }
 
     private void ServerEjectTake(
@@ -553,7 +589,8 @@ internal sealed partial class VideoCameraItem
         int value,
         string breakdown,
         float age,
-        Vector3 spawnPosition)
+        Vector3 spawnPosition,
+        bool eject)
     {
         if (!IsServer || string.IsNullOrEmpty(fileName)) return;
         if (CassetteItem.FindByFile(fileName) != null) return;
@@ -563,13 +600,22 @@ internal sealed partial class VideoCameraItem
             return;
         }
 
+        bool resumed = eject && HasStoredTape();
+        if (resumed)
+        {
+            _serverShadowTake = new StoredTake(_serverPendingCassetteId, _serverPendingFileName, _serverPendingTimestamp,
+                _serverPendingDuration, _serverPendingValue, _serverPendingBreakdown);
+        }
+
         if (!ServerStorePendingCassette(cassetteId, fileName, timestamp, duration, value, breakdown)) return;
+        if (resumed) ServerAwaitStored(fileName, owner);
 
         _serverTakeOpen = false;
         _serverPendingEncoding = true;
         _serverPendingOwner = owner;
         _serverEjectedStart = Mathf.Max(_serverEjectedStart, Time.realtimeSinceStartup - Mathf.Clamp(age, 0f, MaxSegmentAge));
-        ServerBeginEject(spawnPosition);
+        if (eject) ServerBeginEject(spawnPosition);
+        else ServerStoreParts(owner, fileName);
     }
 
     private void ServerBeginEject(Vector3 spawnPosition)
@@ -604,6 +650,10 @@ internal sealed partial class VideoCameraItem
     private void ServerFinishEncode(ulong sender, string fileName, bool ok, float duration)
     {
         if (!IsServer || string.IsNullOrEmpty(fileName)) return;
+        if (!ok && sender == _serverStoredAwaitOwner && string.Equals(fileName, _serverStoredAwait, StringComparison.OrdinalIgnoreCase))
+        {
+            ServerForgetStored("the ejected take could not be written");
+        }
 
         CassetteItem? cassette = CassetteItem.FindByFile(fileName);
         if (cassette != null)
@@ -664,8 +714,7 @@ internal sealed partial class VideoCameraItem
 
     private Vector3 GetEjectPosition()
     {
-        var sor = StartOfRound.Instance;
-        var local = sor != null ? sor.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
 
         if (this != null && playerHeldBy != null
             && local != null && playerHeldBy == local)
@@ -717,6 +766,7 @@ internal sealed partial class VideoCameraItem
         _serverPendingBreakdown = string.Empty;
         _serverPendingEncoding = false;
         _serverPendingOwner = 0;
+        List<ChainSegment>? storedParts = TakeStored(fileName);
 
         if (!TryGetEjectPose(out Vector3 pos, out Quaternion rot))
         {
@@ -746,6 +796,7 @@ internal sealed partial class VideoCameraItem
             cassette.isInElevator = holder != null ? holder.isInElevator : isInElevator;
             cassette.isInShipRoom = holder != null ? holder.isInHangarShipRoom : isInShipRoom;
         }
+        if (storedParts != null) ServerCloseStored(storedParts);
 
         try
         {
@@ -853,15 +904,15 @@ internal sealed partial class VideoCameraItem
         var rm = RoundManager.Instance;
         bool inShip = holder != null && holder.isInHangarShipRoom;
 
-        if (inShip && sor != null && sor.elevatorTransform != null)
+        if (inShip && sor.elevatorTransform != null)
         {
             return sor.elevatorTransform;
         }
-        if (rm != null && rm.spawnedScrapContainer != null)
+        if (rm.spawnedScrapContainer != null)
         {
             return rm.spawnedScrapContainer;
         }
-        if (sor != null && sor.elevatorTransform != null)
+        if (sor.elevatorTransform != null)
         {
             return sor.elevatorTransform;
         }
@@ -1016,6 +1067,13 @@ internal sealed partial class VideoCameraItem
         ApplyWalletDecor(enable, id ?? string.Empty, value);
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestPendingServerRpc()
+    {
+        if (!_serverHasPendingCassette) return;
+        UpdateWalletDecorScanClientRpc(true, _serverPendingCassetteId, _serverPendingValue, _serverPendingTimestamp);
+    }
+
     private void OnEjectCassetteInput(InputAction.CallbackContext _)
     {
         if (Time.unscaledTimeAsDouble < _nextEjectTime)
@@ -1035,8 +1093,7 @@ internal sealed partial class VideoCameraItem
             return;
         }
 
-        var sor = StartOfRound.Instance;
-        var local = sor != null ? sor.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         if (local == null)
         {
             return;
