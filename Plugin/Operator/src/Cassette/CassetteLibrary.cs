@@ -19,6 +19,7 @@ internal static class CassetteLibrary
         public int ScrapValue;
         public string Breakdown = string.Empty;
         public DateTime SavedAt;
+        public string Folder = string.Empty;
     }
 
     private static readonly Dictionary<string, Entry> _entries = new(StringComparer.OrdinalIgnoreCase);
@@ -168,6 +169,7 @@ internal static class CassetteLibrary
                 }
             }
 
+            CheckFiles();
             Plugin.Log.LogInfo($"Cassette library loaded {_entries.Count} entries from DawnLib store.");
 
             foreach (var kv in _entries)
@@ -181,10 +183,82 @@ internal static class CassetteLibrary
         }
     }
 
+    private static void CheckFiles()
+    {
+        if (_entries.Count == 0) return;
+
+        try
+        {
+            string root = Recording.Recorder.GetOutputDirectory();
+            if (!Directory.Exists(root)) return;
+
+            string lobbies = Path.Combine(root, "Lobbies");
+            string[] lobbyDirs = Directory.Exists(lobbies) ? Directory.GetDirectories(lobbies) : Array.Empty<string>();
+            var missing = new List<Entry>();
+            int moved = 0;
+            bool changed = false;
+
+            foreach (Entry entry in _entries.Values)
+            {
+                string fileName = GetMergedName(entry.FileName);
+                if (!GetCandidatePaths(fileName, root).Any(File.Exists))
+                {
+                    string? stranded = Recording.ClipName.IsSafe(fileName)
+                        ? lobbyDirs.Select(dir => Path.Combine(dir, fileName)).FirstOrDefault(File.Exists)
+                        : null;
+                    if (stranded == null)
+                    {
+                        if (string.IsNullOrEmpty(entry.Folder) || string.Equals(entry.Folder, root, StringComparison.OrdinalIgnoreCase)) missing.Add(entry);
+                        continue;
+                    }
+
+                    try
+                    {
+                        File.Move(stranded, Path.Combine(root, fileName));
+                        moved++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Plugin.Log.LogWarning($"Failed to move '{fileName}' into the recordings folder: {ex.Message}");
+                    }
+                }
+
+                if (string.Equals(entry.Folder, root, StringComparison.Ordinal)) continue;
+                entry.Folder = root;
+                changed = true;
+            }
+
+            if (moved > 0) Plugin.Log.LogInfo($"Moved {moved} saved recordings out of lobby folders.");
+            if (missing.Count > 0 && missing.Count == _entries.Count)
+            {
+                Plugin.Log.LogWarning($"None of the {missing.Count} saved cassettes have a recording in '{root}'. Keeping them in case the folder moved.");
+                return;
+            }
+
+            foreach (Entry entry in missing)
+            {
+                _entries.Remove(entry.Id.ToLowerInvariant());
+                Plugin.Log.LogDebug($"Removed saved cassette '{entry.Id}', '{entry.FileName}' is not on disk.");
+            }
+            if (missing.Count > 0) Plugin.Log.LogInfo($"Removed {missing.Count} saved cassettes whose recording is gone.");
+            if (missing.Count > 0 || changed) Flush();
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.LogWarning($"Failed to check saved cassette recordings: {ex.Message}");
+        }
+    }
+
+    public static bool HasEntryFor(string fileName)
+    {
+        return _entries.Values.Any(e => string.Equals(e.FileName, fileName, StringComparison.OrdinalIgnoreCase));
+    }
+
     public static bool TrySave(Entry entry)
     {
         if (entry == null || string.IsNullOrWhiteSpace(entry.Id)) return false;
         entry.Id = entry.Id.ToLowerInvariant();
+        entry.Folder = Recording.Recorder.GetOutputDirectory();
         if (entry.SavedAt == default) entry.SavedAt = DateTime.UtcNow;
         _entries[entry.Id] = entry;
         Flush();
@@ -225,14 +299,14 @@ internal static class CassetteLibrary
         return null;
     }
 
-    public static IEnumerable<string> GetCandidatePaths(string fileName)
+    public static IEnumerable<string> GetCandidatePaths(string fileName, string? lobbyDir = null)
     {
         if (!Recording.ClipName.IsSafe(fileName)) yield break;
         if (Recording.Recorder.IsWriting(fileName)) yield break;
 
         string persistentDir = Recording.Recorder.GetOutputDirectory();
         string unsavedDir = Recording.Recorder.GetUnsavedOutputDirectory();
-        string lobbyDir = Recording.Recorder.GetLobbyOutputDirectory();
+        lobbyDir ??= Recording.Recorder.GetLobbyOutputDirectory();
 
         yield return Path.Combine(persistentDir, fileName);
         yield return Path.Combine(lobbyDir, fileName);
@@ -335,6 +409,8 @@ internal static class CassetteLibrary
                 referenced.Add(cassette.FileName);
             }
         }
+        VideoCameraItem.AddPendingFiles(referenced);
+        CameraPersistence.AddFiles(referenced);
         if (includeLibrary)
         {
             foreach (var kv in _entries)
