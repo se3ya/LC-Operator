@@ -31,6 +31,7 @@ internal sealed class TerminalPlaybackHandler : MonoBehaviour
             return;
         }
 
+        TerminalCassettePlayback.UpdateLayout(_terminal);
         RefreshPlayback(_terminal);
         ReportHitch(start);
     }
