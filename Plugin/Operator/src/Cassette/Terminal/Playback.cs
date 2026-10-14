@@ -8,15 +8,14 @@ internal static partial class TerminalCassettePlayback
 {
     private static void ConfigureVideoPlayer(Terminal terminal, string filePath)
     {
-        VideoPlayer? vp = GetOverlayPlayer(terminal);
-        if (vp == null || _overlayTexture == null)
-        {
-            return;
-        }
+        VideoPlayer vp = GetOverlayPlayer(terminal);
 
         vp.Stop();
         AudioSource? playbackAudio = GetPlaybackAudio(terminal);
         playbackAudio?.Stop();
+
+        UseTexture(Constants.Terminal.OverlayFallbackWidth, Constants.Terminal.OverlayFallbackHeight);
+        FitVideo(Constants.Terminal.OverlayFallbackWidth, Constants.Terminal.OverlayFallbackHeight);
 
         vp.renderMode = VideoRenderMode.RenderTexture;
         vp.targetTexture = _overlayTexture;
@@ -45,6 +44,10 @@ internal static partial class TerminalCassettePlayback
         vp.loopPointReached += OnVideoFinished;
         vp.errorReceived -= OnVideoError;
         vp.errorReceived += OnVideoError;
+
+        vp.prepareCompleted -= OnVideoPrepared;
+        vp.prepareCompleted += OnVideoPrepared;
+        vp.Prepare();
     }
 
     internal static void OnLoadTerminalImage(Terminal terminal, TerminalNode? node)
@@ -86,34 +89,19 @@ internal static partial class TerminalCassettePlayback
     private static void OnVideoFinished(VideoPlayer vp)
     {
         var terminal = UnityEngine.Object.FindObjectOfType<Terminal>();
+        bool joinedLate = _joinedLate;
         StopPlayback(terminal);
 
-        if (TerminalCoWatch.Enabled)
+        if (TerminalCoWatch.Enabled && !joinedLate)
         {
             TerminalCoWatch.RequestStop();
         }
     }
 
-    private static double _nextSiblingCheck;
-
     internal static void RefreshPlayback(Terminal terminal)
     {
         if (!_isPlaying) return;
         if (_overlayPlayer == null || _overlayImage == null || _overlayTexture == null) return;
-
-        if (!_overlayImage.enabled) _overlayImage.enabled = true;
-        if (_overlayImage.texture != _overlayTexture) _overlayImage.texture = _overlayTexture;
-
-        Transform t = _overlayImage.transform;
-        if (t.parent != null && t.GetSiblingIndex() != t.parent.childCount - 1)
-        {
-            double now = Time.unscaledTimeAsDouble;
-            if (now >= _nextSiblingCheck)
-            {
-                _nextSiblingCheck = now + Constants.Terminal.SiblingCheckInterval;
-                t.SetAsLastSibling();
-            }
-        }
 
         if (_overlayPlayer.source != VideoSource.Url || _overlayUrl != _currentPlaybackUrl)
         {
@@ -121,6 +109,7 @@ internal static partial class TerminalCassettePlayback
             _overlayPlayer.url = _currentPlaybackUrl;
             _overlayUrl = _currentPlaybackUrl;
             _overlayPlayer.targetTexture = _overlayTexture;
+            _overlayPlayer.Prepare();
         }
 
         if (_pendingSeekSeconds >= 0.0 && _overlayPlayer.isPrepared)
@@ -133,39 +122,33 @@ internal static partial class TerminalCassettePlayback
         {
             if (_overlayPlayer.isPlaying) _overlayPlayer.Pause();
         }
-        else if (!_overlayPlayer.isPlaying)
+        else if (_overlayPlayer.isPrepared && !_overlayPlayer.isPlaying)
         {
             _overlayPlayer.Play();
         }
     }
 
-    internal static string OffsetAnswer(string text)
-    {
-        if (!_isPlaying || string.IsNullOrEmpty(text)) return text;
-
-        return new string('\n', Constants.Terminal.PlaybackAnswerOffset) + text;
-    }
-
     private static void OnVideoError(VideoPlayer vp, string message)
     {
         Plugin.Log.LogError($"Cassette playback failed: {message}");
+        if (!vp.isPlaying) ApplyStopLocally();
     }
 
     internal static void OnQuitTerminal(Terminal terminal)
     {
-        HidePrepareStatus();
-        if (TerminalCoWatch.Enabled && _isPlaying) return;
+        if (TerminalCoWatch.Enabled && (_isPlaying || TerminalCoWatch.IsPreparingLocally)) return;
         StopPlayback(terminal);
     }
 
     public static void StopPlayback(Terminal? terminal)
     {
-        if (!_isPlaying && (_overlayImage == null || !_overlayImage.enabled))
+        if (!_isPlaying && (_overlayCanvas == null || !_overlayCanvas.gameObject.activeSelf))
         {
             _pendingPlay = false;
             return;
         }
         _isPlaying = false;
+        _joinedLate = false;
         _pendingPlay = false;
         _userPaused = false;
         _pendingSeekSeconds = -1.0;
@@ -178,11 +161,14 @@ internal static partial class TerminalCassettePlayback
             }
             AudioSource? playbackAudio = terminal != null ? FindPlaybackAudio(terminal) : null;
             playbackAudio?.Stop();
-            HideOverlay();
         }
         catch (Exception ex)
         {
             Plugin.Log.LogDebug($"Failed to stop cassette playback: {ex.Message}");
+        }
+        finally
+        {
+            HideOverlay();
         }
     }
 }
