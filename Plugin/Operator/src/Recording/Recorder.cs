@@ -644,14 +644,14 @@ internal sealed class Recorder
 
     private async Task WatchdogAsync(TimeSpan limit, CancellationToken token)
     {
-        const int TickMs = 250;
+        const int PollDelay = 250;
         double remaining = Math.Max(1.0, limit.TotalSeconds);
 
         while (!_stopped && remaining > 0d)
         {
             try
             {
-                await Task.Delay(TickMs, token).ConfigureAwait(false);
+                await Task.Delay(PollDelay, token).ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
@@ -660,7 +660,7 @@ internal sealed class Recorder
 
             if (_captureEnabled)
             {
-                remaining -= TickMs / 1000.0;
+                remaining -= PollDelay / 1000.0;
             }
         }
 
@@ -942,7 +942,7 @@ internal sealed class Recorder
     private static ulong GetLocalClientId()
     {
         var net = Unity.Netcode.NetworkManager.Singleton;
-        return net != null && net.IsListening ? net.LocalClientId : 0UL;
+        return net.IsListening ? net.LocalClientId : 0UL;
     }
 
     public static string GetOutputDirectory()
