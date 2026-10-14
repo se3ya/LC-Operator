@@ -262,6 +262,6 @@ internal static partial class TerminalCassettePlayback
     private static string FormatStatus(string message)
     {
         string body = message?.TrimEnd() ?? string.Empty;
-        return "\n" + new string('\n', StatusTopPadding) + body + "\n\n";
+        return "\n" + body + "\n\n";
     }
 }
