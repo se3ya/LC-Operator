@@ -8,7 +8,7 @@ internal sealed partial class VideoCameraItem
 {
     private void OnZoomFovChanged(float _, float current)
     {
-        var local = StartOfRound.Instance != null ? StartOfRound.Instance.localPlayerController : null;
+        var local = StartOfRound.Instance.localPlayerController;
         if (playerHeldBy != null && playerHeldBy == local) return;
         ApplyFov(current);
     }
@@ -48,8 +48,8 @@ internal sealed partial class VideoCameraItem
 
     private static double GetServerTime()
     {
-        NetworkManager? nm = NetworkManager.Singleton;
-        return nm != null && nm.ServerTime.TickRate != 0 ? nm.ServerTime.Time : 0.0;
+        NetworkManager nm = NetworkManager.Singleton;
+        return nm.ServerTime.TickRate != 0 ? nm.ServerTime.Time : 0.0;
     }
 
     private double GetTapeTime()
@@ -81,6 +81,7 @@ internal sealed partial class VideoCameraItem
         if (!IsServer || !IsSpawned) return;
         if (_recordingState.Value) return;
         if (_tapeClockBase.Value == 0.0) return;
+        if (HasStoredTape()) return;
         try { _tapeClockBase.Value = 0.0; }
         catch (Exception) { }
     }
