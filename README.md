@@ -1,7 +1,8 @@
 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
   <img src="https://img.shields.io/codefactor/grade/github/se3ya/LC-Operator?style=flat&logo=codefactor&logoColor=white&color=83E6FB&cacheSeconds=1200" alt="CodeFactor Grade">
-  <img src="https://img.shields.io/thunderstore/dt/seechela/Operator?style=flat&logo=thunderstore&logoColor=white&color=83E6FB&cacheSeconds=1200" alt="Thunderstore Downloads">
+  <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fthunderstore.io%2Fapi%2Fv1%2Fpackage-metrics%2Fseechela%2FOperator%2F&query=%24.downloads&label=downloads&style=flat&logo=thunderstore&logoColor=white&color=83E6FB&cacheSeconds=1200" alt="Thunderstore Downloads">
   <img src="https://img.shields.io/github/v/release/se3ya/LC-Operator?style=flat&logo=github&logoColor=white&color=83E6FB&cacheSeconds=1200" alt="GitHub Release Version">
+  <a href="https://discord.gg/Z9rUwTtUpx"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscordapp.com%2Fapi%2Finvites%2FZ9rUwTtUpx%3Fwith_counts%3Dtrue&query=approximate_member_count&style=flat&logo=discord&logoColor=white&color=83E6FB&cacheSeconds=1200&label=Discord" alt="Discord"></a>
   </div>
 <br><br>
 
@@ -20,7 +21,7 @@
 - Cassette colour shows what it is worth, from plain up to gold and holo
 - Watch cassettes on the terminal or ship TV
 - Cassettes and their recordings stay with your save
-- Compatible with **GeneralImprovements**, **OpenBodyCams**, **CullFactory**, **Lategame Upgrades**, **LethalSponge**, **Mirage**, **BetterScanVision**, **JLL**, **SoundAPI** and **darmuhsTerminalStuff**
+- Compatible with **GeneralImprovements**, **OpenBodyCams**, **CullFactory**, **Lategame Upgrades**, **LethalSponge**, **Mirage**, **BetterScanVision**, **JLL**, **SoundAPI**, **darmuhsTerminalStuff**, **SelfSortingStorage** and **LCVR**
 
 ---
 
