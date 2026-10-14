@@ -20,7 +20,6 @@ internal static partial class TerminalCassettePlayback
     private static readonly string EvtResume = Constants.Terminal.EventResume;
     private static readonly string EvtVolume = Constants.Terminal.EventVolume;
     private static readonly string EvtTransfer = Constants.Terminal.EventTransfer;
-    private const int StatusTopPadding = 16;
     private const string DefaultHelpKeyword = "ohelp";
     private const string AudioName = "VideoCamTerminalPlaybackAudio";
     private static bool _helpKeywordFallbackLogged;
@@ -43,6 +42,8 @@ internal static partial class TerminalCassettePlayback
     private static bool _isPlaying;
 
     internal static bool IsPlaying => _isPlaying;
+
+    private static bool _joinedLate;
 
     private static bool _pendingPlay;
 
