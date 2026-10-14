@@ -11,5 +11,6 @@ internal static class ModGUIDs
     public const string Jll = "JacobG5.JLL";
     public const string BetterScanVision = "DBJ.BetterScanVision";
     public const string LethalSponge = "LethalSponge";
+    public const string SelfSortingStorage = "zigzag.SelfSortingStorage";
     public const string Lcvr = "io.daxcess.lcvr";
 }
