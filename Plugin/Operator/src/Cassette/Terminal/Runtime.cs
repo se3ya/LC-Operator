@@ -118,11 +118,11 @@ internal static partial class TerminalCassettePlayback
     {
         ConfigureVideoPlayer(terminal, filePath);
         _isPlaying = true;
+        _joinedLate = false;
         _pendingPlay = false;
         SetupHandler(terminal);
         HidePrepareStatus();
         ShowOverlay();
-        if (_overlayPlayer != null && !_overlayPlayer.isPlaying) _overlayPlayer.Play();
     }
 
     private static void ExecTransfer()
@@ -164,6 +164,25 @@ internal static partial class TerminalCassettePlayback
         StartPlaybackLocal(terminal, filePath!);
     }
 
+    internal static bool ApplyJoinLocally(string fileName, double position, float speed, bool paused)
+    {
+        Terminal? terminal = GetActiveTerminal();
+        if (terminal == null) return false;
+
+        string? filePath = FindFilePath(fileName);
+        if (string.IsNullOrEmpty(filePath)) return false;
+
+        _pendingReceiveFileName = string.Empty;
+        _pendingWait.Clear();
+        _playingFileName = fileName;
+        StartPlaybackLocal(terminal, filePath!);
+        _joinedLate = true;
+        _pendingSeekSeconds = position;
+        _userPaused = paused;
+        SetSpeed(terminal, speed);
+        return true;
+    }
+
     internal static void ApplyStopLocally()
     {
         _pendingReceiveFileName = string.Empty;
@@ -197,6 +216,7 @@ internal static partial class TerminalCassettePlayback
         _pendingReceiveFileName = string.Empty;
         _pendingWait.Clear();
         HidePrepareStatus();
+        TerminalCoWatch.TrackStop();
         Terminal? terminal = GetActiveTerminal();
         StopPlayback(terminal);
 
@@ -214,6 +234,7 @@ internal static partial class TerminalCassettePlayback
     {
         Terminal? terminal = GetActiveTerminal();
         if (terminal == null) return;
+        if (_isPlaying && TerminalCoWatch.Enabled) StopPlayback(terminal);
         SetupHandler(terminal);
         _lastStatusText = string.Empty;
         UpdatePrepareStatus(LocalHasFile(fileName), 0);
@@ -221,21 +242,13 @@ internal static partial class TerminalCassettePlayback
 
     internal static void UpdatePrepareStatus(bool hasFile, int waiting)
     {
-        string text = PrepareStatusText(hasFile, waiting);
+        string text = PrepareText.For(hasFile, waiting);
         if (text == _lastStatusText) return;
 
         Terminal? terminal = GetActiveTerminal();
         if (terminal == null) return;
 
         ShowPrepareStatus(terminal, text);
-    }
-
-    private static string PrepareStatusText(bool hasFile, int waiting)
-    {
-        if (!hasFile) return "RECEIVING RECORDING...\nPLEASE WAIT";
-        if (waiting == 1) return "WAITING FOR 1 PLAYER\nTO RECEIVE RECORDING...";
-        if (waiting > 1) return $"WAITING FOR {waiting} PLAYERS\nTO RECEIVE RECORDING...";
-        return "WAITING FOR PLAYERS\nTO RECEIVE RECORDING...";
     }
 
     internal static void ApplyAbortLocally()
@@ -281,6 +294,7 @@ internal static partial class TerminalCassettePlayback
         else Plugin.Log.LogInfo($"'{fileName}' is not coming to this machine, so it will not play here.");
         _pendingReceiveFileName = string.Empty;
         _pendingWait.Clear();
+        if (!_isPlaying) HideOverlay();
     }
 
     internal static void ApplyTransportLocally(byte kind, float value, float positionSeconds = -1f)
@@ -427,7 +441,8 @@ internal static partial class TerminalCassettePlayback
 
         int deletedFiles = 0;
         if (VideoCameraConfig.KeepUnsavedPerLobby.Value
-            && !string.IsNullOrWhiteSpace(entry.FileName))
+            && !string.IsNullOrWhiteSpace(entry.FileName)
+            && !CassetteLibrary.HasEntryFor(entry.FileName))
         {
             deletedFiles = CassetteLibrary.DeleteRecordingFiles(entry.FileName);
         }
@@ -454,7 +469,7 @@ internal static partial class TerminalCassettePlayback
     private static void Resume(Terminal terminal)
     {
         _userPaused = false;
-        if (_overlayPlayer != null && _overlayPlayer.enabled && !_overlayPlayer.isPlaying)
+        if (_overlayPlayer != null && _overlayPlayer.enabled && _overlayPlayer.isPrepared && !_overlayPlayer.isPlaying)
         {
             _overlayPlayer.Play();
         }
