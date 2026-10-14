@@ -314,6 +314,7 @@ internal sealed partial class VideoCameraItem : GrabbableObject
     {
         base.OnNetworkSpawn();
         _networkReady = true;
+        ApplyLoaded();
         _recordingState.OnValueChanged += OnRecordingStateChanged;
         _cameraMode.OnValueChanged += OnCameraModeChanged;
         _nightVisionOn.OnValueChanged += OnNightVisionChanged;
@@ -348,6 +349,7 @@ internal sealed partial class VideoCameraItem : GrabbableObject
         ApplySyncedZoom();
 
         StartCoroutine(DrainBattery());
+        SyncPendingTint();
     }
 
     public override void OnNetworkDespawn()
