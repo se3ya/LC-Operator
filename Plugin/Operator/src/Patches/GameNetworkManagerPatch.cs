@@ -2,6 +2,7 @@ using System;
 using HarmonyLib;
 using Operator.Cassette;
 using Operator.Recording;
+using Unity.Netcode;
 
 namespace Operator.Patches;
 
@@ -21,6 +22,8 @@ internal static class DisconnectPatch
         {
             Plugin.Log.LogWarning($"Failed to clean up cassette files after disconnecting: {ex.Message}");
         }
+
+        if (NetworkManager.Singleton == null) return;
 
         try
         {
