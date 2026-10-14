@@ -15,6 +15,7 @@ internal static class TerminalStartPatch
     private static void Postfix(Terminal __instance)
     {
         TerminalCassettePlayback.RegisterKeywords(__instance);
+        TerminalCassettePlayback.InitPose(__instance);
     }
 }
 
@@ -42,13 +43,6 @@ internal static class TerminalEventsPatch
 internal static class TerminalQuitPatch
 {
     private static void Postfix(Terminal __instance) => TerminalCassettePlayback.OnQuitTerminal(__instance);
-}
-
-[HarmonyPatch(typeof(Terminal), "TextPostProcess")]
-internal static class TerminalTextPatch
-{
-    private static void Postfix(ref string __result)
-        => __result = TerminalCassettePlayback.OffsetAnswer(__result);
 }
 
 [HarmonyPatch(typeof(Terminal), nameof(Terminal.LoadTerminalImage))]
