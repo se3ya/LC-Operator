@@ -21,10 +21,24 @@ internal sealed partial class VideoCameraItem
     private float _chainCloseHardDeadline;
     private readonly List<ChainSegment> _chainHeld = new();
     private float _chainHeldUntil;
+    private readonly List<ChainSegment> _serverStored = new();
+    private string _serverStoredAwait = string.Empty;
+    private ulong _serverStoredAwaitOwner;
 
-    private static int _merging;
+    private static readonly Dictionary<System.Threading.Tasks.Task, VideoCameraItem> _mergeJobs = new();
 
-    internal static bool IsMerging => _merging > 0;
+    internal static bool IsMerging
+    {
+        get
+        {
+            foreach (KeyValuePair<System.Threading.Tasks.Task, VideoCameraItem> job in _mergeJobs)
+            {
+                if (job.Value != null && !job.Key.IsCompleted) return true;
+            }
+            _mergeJobs.Clear();
+            return false;
+        }
+    }
 
     private static readonly Dictionary<IEnumerator, VideoCameraItem> _stitching = new();
     private static readonly HashSet<string> _skippedSegments = new(StringComparer.OrdinalIgnoreCase);
@@ -81,7 +95,7 @@ internal sealed partial class VideoCameraItem
         }
 
         float age = Mathf.Clamp(Time.realtimeSinceStartup - segmentStartRealtime, 0f, MaxSegmentAge);
-        ulong ownerId = NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId : 0UL;
+        ulong ownerId = NetworkManager.Singleton.LocalClientId;
         if (IsServer)
         {
             ServerAddSegment(ownerId, fileName, endedByHandoff, duration, breakdown, age);
@@ -94,7 +108,7 @@ internal sealed partial class VideoCameraItem
 
     private void ReportRecordingFailure(bool endedByHandoff)
     {
-        ulong ownerId = NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId : 0UL;
+        ulong ownerId = NetworkManager.Singleton.LocalClientId;
         if (IsServer)
         {
             ServerSkipSegment(ownerId, endedByHandoff);
@@ -115,6 +129,7 @@ internal sealed partial class VideoCameraItem
     {
         if (!IsServer) return;
         ServerCloseTake();
+        if (_serverStored.Count > 0 && !HasStoredTape() && _serverStoredAwait.Length == 0) _serverStored.Clear();
 
         if (!_chainOpen)
         {
@@ -166,6 +181,21 @@ internal sealed partial class VideoCameraItem
         ageSeconds = Mathf.Clamp(ageSeconds, 0f, MaxSegmentAge);
         float startEstimate = Time.realtimeSinceStartup - ageSeconds;
 
+        if (_serverStored.Count > 0)
+        {
+            if (IsStoredFile(fileName)) return;
+            if (ContinuesStored(fileName))
+            {
+                _serverStoredAwait = string.Empty;
+                ServerOpenStored(startEstimate);
+            }
+            else if (_serverStoredAwait.Length == 0)
+            {
+                Plugin.Log.LogDebug($"Dropped {_serverStored.Count} stored tape segments, their tape left the camera.");
+                _serverStored.Clear();
+            }
+        }
+
         if (!_chainOpen && ServerReopenHeldChain())
         {
             Plugin.Log.LogDebug("Continuation turned up after chain was closed, so chain is open again.");
@@ -201,6 +231,150 @@ internal sealed partial class VideoCameraItem
         {
             ServerCloseChain(null);
         }
+    }
+
+    private bool HasStoredTape()
+    {
+        return _serverStored.Count > 0
+            && _serverHasPendingCassette
+            && string.Equals(_serverPendingFileName, _serverStored[_serverStored.Count - 1].FileName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsStoredFile(string fileName)
+    {
+        foreach (ChainSegment part in _serverStored)
+        {
+            if (string.Equals(part.FileName, fileName, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
+    }
+
+    private bool ContinuesStored(string fileName)
+    {
+        if (_serverStoredAwait.Length > 0)
+        {
+            return string.Equals(_serverStoredAwait, fileName, StringComparison.OrdinalIgnoreCase);
+        }
+        return HasStoredTape()
+            || (_serverHasPendingCassette && string.Equals(_serverPendingFileName, fileName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ServerAwaitStored(string fileName, ulong owner)
+    {
+        _serverStoredAwait = fileName;
+        _serverStoredAwaitOwner = owner;
+    }
+
+    private void ServerForgetStored(string reason)
+    {
+        if (_serverStored.Count == 0 && _serverStoredAwait.Length == 0) return;
+        Plugin.Log.LogDebug($"Dropped {_serverStored.Count} stored tape segments because {reason}.");
+        _serverStored.Clear();
+        _serverStoredAwait = string.Empty;
+    }
+
+    private void ServerKeepChain()
+    {
+        if (!IsServer || !_serverHasPendingCassette || HasStoredTape()) return;
+        if (!_chainOpen && EndsWithPending(_chainHeld)) ServerReopenHeldChain();
+        if (!_chainOpen || _chainSegments.Count == 0) return;
+
+        _chainSegments.Sort((a, b) => a.StartEstimate.CompareTo(b.StartEstimate));
+        if (!string.Equals(_chainSegments[_chainSegments.Count - 1].FileName, _serverPendingFileName, StringComparison.OrdinalIgnoreCase)) return;
+
+        _serverStored.Clear();
+        _serverStored.AddRange(_chainSegments);
+        _chainSegments.Clear();
+        _chainOpen = false;
+        _serverStoredAwait = string.Empty;
+        Plugin.Log.LogDebug($"Kept {_serverStored.Count} chain segments for the camera to continue, last '{_serverPendingFileName}'.");
+    }
+
+    private bool EndsWithPending(List<ChainSegment> segments)
+    {
+        ChainSegment? latest = null;
+        foreach (ChainSegment segment in segments)
+        {
+            if (latest == null || segment.StartEstimate >= latest.Value.StartEstimate) latest = segment;
+        }
+        return latest != null && string.Equals(latest.Value.FileName, _serverPendingFileName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void KeepChainServerRpc()
+    {
+        ServerKeepChain();
+    }
+
+    private void ServerStoreParts(ulong owner, string fileName)
+    {
+        if (_serverStoredAwait.Length > 0) ServerForgetStored("a new take was stored before the ejected one finished");
+        if (!_chainOpen) ServerReopenHeldChain();
+        var parts = new List<ChainSegment>(_serverStored);
+        if (_chainOpen)
+        {
+            _chainSegments.Sort((a, b) => a.StartEstimate.CompareTo(b.StartEstimate));
+            parts.AddRange(_chainSegments);
+            _chainSegments.Clear();
+            _chainOpen = false;
+        }
+        parts.Add(new ChainSegment(owner, fileName, true, _serverPendingDuration, _serverPendingValue,
+            _serverSessionWorthless ? null : _serverPendingBreakdown, Time.realtimeSinceStartup));
+
+        _serverStored.Clear();
+        foreach (ChainSegment part in parts)
+        {
+            if (!IsStoredFile(part.FileName)) _serverStored.Add(part);
+        }
+        Plugin.Log.LogDebug($"Kept {_serverStored.Count} tape segments for the camera to continue, last '{fileName}'.");
+    }
+
+    private void ServerOpenStored(float before)
+    {
+        if (_chainOpen)
+        {
+            foreach (ChainSegment segment in _chainSegments) before = Mathf.Min(before, segment.StartEstimate);
+        }
+        else
+        {
+            _chainSegments.Clear();
+        }
+
+        var seeded = new List<ChainSegment>();
+        for (int i = 0; i < _serverStored.Count; i++)
+        {
+            ChainSegment part = _serverStored[i];
+            seeded.Add(new ChainSegment(part.OwnerClientId, part.FileName, true, part.Duration, part.Value, part.Breakdown, before - (_serverStored.Count - i)));
+        }
+        _chainSegments.InsertRange(0, seeded);
+        _serverStored.Clear();
+        _chainOpen = true;
+        _chainLastActivityTime = Time.realtimeSinceStartup;
+        Plugin.Log.LogDebug($"Continuing a stored tape, chain opened with {_chainSegments.Count} segments.");
+    }
+
+    private List<ChainSegment>? TakeStored(string fileName)
+    {
+        if (_serverStored.Count == 0) return null;
+        if (!string.Equals(_serverStored[_serverStored.Count - 1].FileName, fileName, StringComparison.OrdinalIgnoreCase)) return null;
+        var parts = new List<ChainSegment>(_serverStored);
+        _serverStored.Clear();
+        return parts;
+    }
+
+    private void ServerCloseStored(List<ChainSegment> parts)
+    {
+        if (parts.Count < 2 || _chainOpen) return;
+        _chainSegments.Clear();
+        float now = Time.realtimeSinceStartup;
+        for (int i = 0; i < parts.Count; i++)
+        {
+            ChainSegment part = parts[i];
+            bool closing = i == parts.Count - 1;
+            _chainSegments.Add(new ChainSegment(part.OwnerClientId, part.FileName, !closing, part.Duration, part.Value, part.Breakdown, now - (parts.Count - i)));
+        }
+        _chainOpen = true;
+        ServerCloseChain(null);
     }
 
     internal void ServerScheduleChainClose()
@@ -550,9 +724,9 @@ internal sealed partial class VideoCameraItem
                     if (segs[i].Owner != segs[0].Owner) { oneOwner = false; break; }
                 }
                 var stitchTask = RecordingStitcher.ConcatAsync(pathsCopy, outPath, oneOwner);
-                _merging++;
+                _mergeJobs[stitchTask] = this;
                 yield return new WaitUntil(() => stitchTask.IsCompleted);
-                _merging--;
+                _mergeJobs.Remove(stitchTask);
                 RecordingStitcher.StitchResult result =
                     stitchTask.Status == System.Threading.Tasks.TaskStatus.RanToCompletion
                         ? stitchTask.Result
@@ -755,7 +929,7 @@ internal sealed partial class VideoCameraItem
 
     private static string? FindSegmentPath(ulong owner, string fileName)
     {
-        ulong me = NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId : 0UL;
+        ulong me = NetworkManager.Singleton.LocalClientId;
 
         if (owner == me)
         {
